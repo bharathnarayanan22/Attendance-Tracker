@@ -1,0 +1,72 @@
+.homeContainer {
+    background-image: url("/src/assets/homebg.jpg");
+    background-size: cover;
+    background-position: center;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    /*filter: blur(5px);  Apply blur effect to background */
+  }
+  
+  .content {
+    padding: 40px;
+    border-radius: 10px;
+    background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent black background */
+    text-align: center;
+  }
+  
+  .heading {
+    font-size: 48px; /* Increase heading font size */
+    font-weight: bold;
+    margin-bottom: 20px;
+  }
+  
+  .description {
+    font-size: 20px; /* Increase description font size */
+    line-height: 1.6;
+    margin-bottom: 30px;
+  }
+  
+  .getStartedButton {
+    padding: 16px 32px;
+    font-size: 20px; /* Increase button font size */
+    border-radius: 8px;
+    border: none;
+    background-color: #1ebba3; /* Green color */
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .getStartedButton:hover {
+    background-color: #159d89; /* Darker shade of green on hover */
+  }
+  
+  .authOptions {
+    margin-top: 30px;
+  }
+  
+  .button {
+    padding: 14px 28px;
+    font-size: 18px; /* Increase button font size */
+    border-radius: 8px;
+    border: none;
+    background-color: #ffffff; /* White color */
+    color: #333333; /* Dark grey text color */
+    margin: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  
+  .button:hover {
+    background-color: #f2f2f2; /* Light grey background on hover */
+    color: #333333; /* Dark grey text color */
+  }
+  
+  .link {
+    text-decoration: none;
+    color: white;
+  }
+  
