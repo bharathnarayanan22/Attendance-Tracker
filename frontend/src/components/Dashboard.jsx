@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './Dashboard.css';
+import ClassList from './ClassList';
+import CreateClassForm from './CreateClassForm';
+import EnrollStudentsForm from './EnrollStudentsForm';
+import AddStudentForm from './AddStudentForm';
 
 const Dashboard = () => {
   const [className, setClassName] = useState('');
@@ -11,11 +15,11 @@ const Dashboard = () => {
   const [classes, setClasses] = useState([]);
   const [loggedInUser, setLoggedInUser] = useState('');
   const [selectedSidebarItem, setSelectedSidebarItem] = useState('Home');
+  const [enrolledStudents, setEnrolledStudents] = useState([]);
 
   useEffect(() => {
     fetchClasses();
     fetchStudents();
-    // Fetch additional data or perform actions on component mount
   }, []);
 
   const fetchClasses = async () => {
@@ -35,9 +39,8 @@ const Dashboard = () => {
       console.error('Failed to fetch students:', error);
     }
   };
-  
-  const handleCreateClass = async (e) => {
-    e.preventDefault();
+
+  const handleCreateClass = async () => {
     try {
       const newClass = { className, courseCode, schedule };
       const response = await axios.post('http://localhost:5000/api/classes', newClass);
@@ -50,10 +53,12 @@ const Dashboard = () => {
     }
   };
 
-  const handleEnrollStudent = async (e) => {
-    e.preventDefault();
+  const handleEnrollStudent = async (classId) => { // Accept classId as parameter
     try {
-      const enrollmentData = { studentId: selectedStudent, classId: e.target.value };
+      const enrollmentData = {
+        studentId: selectedStudent,
+        classId: classId // Use the passed classId
+      };
       const response = await axios.post('http://localhost:5000/api/enrollments', enrollmentData);
       console.log('Student enrolled successfully:', response.data);
       setSelectedStudent('');
@@ -61,9 +66,11 @@ const Dashboard = () => {
       console.error('Student enrollment failed:', error);
     }
   };
-
-  const handleAddStudent = async (e) => {
-    e.preventDefault();
+  
+  
+  
+  
+  const handleAddStudent = async () => {
     try {
       const newStudent = { name: className, email: courseCode };
       const response = await axios.post('http://localhost:5000/api/students', newStudent);
@@ -79,105 +86,69 @@ const Dashboard = () => {
     setSelectedSidebarItem(item);
   };
 
-  const renderContent = () => {
-    switch (selectedSidebarItem) {
-      case 'Create Class':
-        return (
-          <form onSubmit={handleCreateClass}>
-            <h2>Create Class</h2>
-            <input
-              type="text"
-              placeholder="Class Name"
-              value={className}
-              onChange={(e) => setClassName(e.target.value)}
-              required
-            />
-            <input
-              type="text"
-              placeholder="Course Code"
-              value={courseCode}
-              onChange={(e) => setCourseCode(e.target.value)}
-              required
-            />
-            <input
-              type="text"
-              placeholder="Schedule"
-              value={schedule}
-              onChange={(e) => setSchedule(e.target.value)}
-              required
-            />
-            <button type="submit">Create Class</button>
-          </form>
-        );
-
-      case 'Enroll Students':
-        return (
-          <form>
-            <h2>Enroll Students</h2>
-            <select value={selectedStudent} onChange={(e) => setSelectedStudent(e.target.value)} required>
-              <option value="">Select Student</option>
-              {students.map((student) => (
-                <option key={student._id} value={student._id}>
-                  {student.name}
-                </option>
-              ))}
-            </select>
-            <select onChange={handleEnrollStudent} required>
-              <option value="">Select Class</option>
-              {classes.map((cls) => (
-                <option key={cls._id} value={cls._id}>
-                  {cls.className} - {cls.courseCode}
-                </option>
-              ))}
-            </select>
-            <button type="submit">Enroll Student</button>
-          </form>
-        );
-
-      case 'Add Student':
-        return (
-          <form onSubmit={handleAddStudent}>
-            <h2>Add Student</h2>
-            <input
-              type="text"
-              placeholder="Student Name"
-              value={className}
-              onChange={(e) => setClassName(e.target.value)}
-              required
-            />
-            <input
-              type="email"
-              placeholder="Student Email"
-              value={courseCode}
-              onChange={(e) => setCourseCode(e.target.value)}
-              required
-            />
-            <button type="submit">Add Student</button>
-          </form>
-        );
-
-      default:
-        return (
-          <div className="class-list">
-            <h2>All Classes</h2>
-            <ul>
-              {classes.map((cls) => (
-                <li key={cls._id}>
-                  {cls.className} - {cls.courseCode}
-                </li>
-              ))}
-            </ul>
-          </div>
-        );
+  const handleClassClick = async (classId) => {
+    try {
+      const response = await axios.get(`http://localhost:5000/api/enrollments/class/${classId}`);
+      const enrolledStudents = response.data;
+      setEnrolledStudents(enrolledStudents);
+    } catch (error) {
+      console.error('Failed to fetch enrolled students:', error);
     }
   };
 
   const handleLogout = async () => {
     try {
-      const response = await axios.post("http://localhost:5000/api/auth/logout");
-      window.location.href = "/"; 
+      const response = await axios.post('http://localhost:5000/api/auth/logout');
+      window.location.href = '/';
     } catch (error) {
-      console.error("Logout failed:", error);
+      console.error('Logout failed:', error);
+    }
+  };
+
+  const renderContent = () => {
+    switch (selectedSidebarItem) {
+      case 'Create Class':
+        return (
+          <CreateClassForm
+            className={className}
+            courseCode={courseCode}
+            schedule={schedule}
+            handleCreateClass={handleCreateClass}
+            setClassName={setClassName}
+            setCourseCode={setCourseCode}
+            setSchedule={setSchedule}
+          />
+        );
+
+      case 'Enroll Students':
+        return (
+          <EnrollStudentsForm
+            students={students}
+            classes={classes}
+            selectedStudent={selectedStudent}
+            handleEnrollStudent={handleEnrollStudent}
+            setSelectedStudent={setSelectedStudent}
+          />
+        );
+
+      case 'Add Student':
+        return (
+          <AddStudentForm
+            className={className}
+            courseCode={courseCode}
+            handleAddStudent={handleAddStudent}
+            setClassName={setClassName}
+            setCourseCode={setCourseCode}
+          />
+        );
+
+      default:
+        return (
+          <ClassList
+            classes={classes}
+            handleClassClick={handleClassClick}
+          />
+        );
     }
   };
 
