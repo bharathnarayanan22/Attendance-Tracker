@@ -27,7 +27,7 @@ const Register = () => {
     e.preventDefault();
     try {
       const response = await axios.post('http://localhost:5000/api/auth/signup', formData);
-      console.log(response.data.message); // Output success message
+      console.log(response.data.message);
 
       // Redirect to dashboard upon successful signup
       window.location.replace('/dashboard'); // Redirect using window.location
@@ -43,9 +43,7 @@ const Register = () => {
         email,
         password
       });
-      console.log(response.data); // Output token and userId
 
-      // Redirect to dashboard upon successful login
       window.location.replace('/dashboard'); // Redirect using window.location
     } catch (error) {
       console.error('Login failed:', error);
