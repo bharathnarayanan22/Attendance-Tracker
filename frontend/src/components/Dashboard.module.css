@@ -1,0 +1,54 @@
+/* Dashboard.module.css */
+
+.dashboard {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px;
+  }
+  
+  .sidebar {
+    width: 20%;
+    background-color: #f0f0f0;
+    padding: 20px;
+    border-radius: 8px;
+  }
+  
+  .content {
+    flex: 1;
+    margin-left: 20px;
+  }
+  
+  .mainContent {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .courseContainer {
+    margin-top: 20px;
+  }
+  
+  .courseList {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-gap: 20px;
+  }
+  
+  .courseBox {
+    background-color: #f9f9f9;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .courseBox h4 {
+    font-size: 18px;
+    margin-bottom: 10px;
+  }
+  
+  .courseBox p {
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+  

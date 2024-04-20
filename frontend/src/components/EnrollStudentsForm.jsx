@@ -1,33 +1,83 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
-const EnrollStudentsForm = ({ students, classes, selectedStudent, handleEnrollStudent, setSelectedStudent }) => {
-  const handleSubmit = (e) => {
+const EnrollStudentsForm = () => {
+  const [courseId, setCourseId] = useState('');
+  const [studentIds, setStudentIds] = useState([]);
+  const [classes, setClasses] = useState([]);
+  const [students, setStudents] = useState([]);
+
+  useEffect(() => {
+    const fetchClasses = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/api/classes');
+        setClasses(response.data);
+      } catch (error) {
+        console.error('Error fetching classes:', error);
+      }
+    };
+
+    const fetchStudents = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/api/students');
+        setStudents(response.data);
+      } catch (error) {
+        console.error('Error fetching students:', error);
+      }
+    };
+
+    fetchClasses();
+    fetchStudents();
+  }, []);
+
+  const handleCourseChange = (e) => {
+    setCourseId(e.target.value);
+  };
+
+  const handleStudentChange = (e) => {
+    const selectedStudentIds = Array.from(e.target.selectedOptions, (option) => option.value);
+    setStudentIds(selectedStudentIds);
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const classId = e.target.querySelector('select[name="class"]').value; // Get the selected class ID
-    handleEnrollStudent(classId); // Pass the selected classId to handleEnrollStudent
+  
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.post(
+        'http://localhost:5000/api/enroll',
+        { courseId, studentIds },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+  
+      console.log(response.data); // Handle success
+    } catch (error) {
+      console.error('Enrollment failed:', error); // Handle error
+    }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <h2>Enroll Students</h2>
-      <select value={selectedStudent} onChange={(e) => setSelectedStudent(e.target.value)} required>
-        <option value="">Select Student</option>
-        {students.map((student) => (
-          <option key={student._id} value={student._id}>
-            {student.name}
-          </option>
-        ))}
-      </select>
-      <select name="class" required>
-        <option value="">Select Class</option>
-        {classes.map((cls) => (
-          <option key={cls._id} value={cls._id}>
-            {cls.className} - {cls.courseCode}
-          </option>
-        ))}
-      </select>
-      <button type="submit">Enroll Student</button>
-    </form>
+    <div>
+      <h2>Enroll Students to Course</h2>
+      <form onSubmit={handleSubmit}>
+        <label htmlFor="courseId">Select Course:</label>
+        <select id="courseId" value={courseId} onChange={handleCourseChange} required>
+          <option value="">Select a course</option>
+          {classes.map((cls) => (
+            <option key={cls._id} value={cls._id}>{cls.courseName}</option>
+          ))}
+        </select>
+
+        <label htmlFor="studentIds">Select Students:</label>
+        <select id="studentIds" multiple value={studentIds} onChange={handleStudentChange} required>
+          {students.map((student) => (
+            <option key={student._id} value={student._id}>{student.name}</option>
+          ))}
+        </select>
+
+        <button type="submit">Enroll Students</button>
+      </form>
+    </div>
   );
 };
 
