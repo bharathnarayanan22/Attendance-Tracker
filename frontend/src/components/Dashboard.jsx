@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import Sidebar from './SideBar';
 import AddStudent from './AddStudent';
@@ -16,6 +16,12 @@ const Dashboard = () => {
   const [enrolledStudents, setEnrolledStudents] = useState([]);
   const [attendanceResults, setAttendanceResults] = useState([]);
   const navigate = useNavigate();
+
+  const [result, setResult] = useState('');
+  const videoRef = useRef(null);
+  const intervalRef = useRef(null);
+  const [cameraStarted, setCameraStarted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false); // Loading state
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -70,20 +76,6 @@ const Dashboard = () => {
     }
   };
 
-  const handleStartAttendance = () => {
-    const socket = socketIOClient('http://localhost:5000');
-    socket.emit('startAttendance');
-
-    socket.on('attendanceResult', (detections) => {
-      setAttendanceResults(detections);
-      // Process attendance results here and update UI accordingly
-    });
-
-    socket.on('disconnect', () => {
-      console.log('Socket disconnected');
-    });
-  };
-
   const handleUnenroll = async (courseId, studentId) => {
     try {
       const token = localStorage.getItem('token');
@@ -116,6 +108,80 @@ const Dashboard = () => {
     setSelectedCourse(null);
   };
 
+  const startCamera = async () => {
+    try {
+      const mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
+      videoRef.current.srcObject = mediaStream;
+      setCameraStarted(true);
+    } catch (error) {
+      console.error('Error accessing the camera:', error);
+    }
+  };
+
+  const takeSnapshot = () => {
+    if (videoRef.current) {
+      const canvas = document.createElement('canvas');
+      canvas.width = videoRef.current.videoWidth;
+      canvas.height = videoRef.current.videoHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+      return canvas.toDataURL('image/jpeg');
+    }
+    return null;
+  };
+
+  const sendSnapshot = async () => {
+    try {
+      const imageData = takeSnapshot();
+      if (!imageData) return;
+
+      const formData = new FormData();
+      formData.append('File1', dataURItoBlob(imageData), 'snapshot.jpg');
+
+      const response = await fetch('http://localhost:5000/check-face', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await response.json();
+      displayResult(data.result);
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+
+  const dataURItoBlob = (dataURI) => {
+    const byteString = atob(dataURI.split(',')[1]);
+    const ab = new ArrayBuffer(byteString.length);
+    const ia = new Uint8Array(ab);
+    for (let i = 0; i < byteString.length; i++) {
+      ia[i] = byteString.charCodeAt(i);
+    }
+    return new Blob([ab], { type: 'image/jpeg' });
+  };
+
+  const displayResult = (result) => {
+    if (result.length > 0 && result[0]._label !== 'unknown') {
+      setResult(`Detected face: ${result[0]._label}`);
+    } else {
+      setResult('No face detected or unknown face');
+    }
+  };
+
+  const handleTakeAttendance = async () => {
+    if (!cameraStarted) {
+      startCamera();
+      setCameraStarted(true);
+    }
+
+    setIsLoading(true); // Set loading state
+
+    intervalRef.current = setInterval(async () => {
+      await sendSnapshot();
+      setIsLoading(false); // Reset loading state after sending snapshot
+    }, 5000);
+  };
+
   const renderContent = () => {
     switch (selectedMenuItem) {
       case 'add-student':
@@ -131,12 +197,26 @@ const Dashboard = () => {
             <div className={styles.mainContent}>
               <h2>Enrolled Students for Selected Course</h2>
               <button onClick={handleBack}>Back</button>
-              <button onClick={handleStartAttendance}>Take Attendance</button>
+              <div>
+                {cameraStarted ? (
+                  <div>
+                    <video ref={videoRef} autoPlay />
+                    {/* <button onClick={handleTakeAttendance}>Take Attendance</button> */}
+                    {isLoading ? (
+                      <p>Loading...</p>
+                    ) : (
+                      result && <p>{result}</p>
+                    )}
+                  </div>
+                ) : (
+                  <button onClick={handleTakeAttendance}>Start Camera</button>
+                )}
+              </div>
               <ul>
                 {enrolledStudents.map((student) => (
                   <li key={student._id}>
                     {student.name}
-                    <button onClick={() => handleUnenroll(student._id)}>Unenroll</button>
+                    <button onClick={() => handleUnenroll(selectedCourse, student._id)}>Unenroll</button>
                   </li>
                 ))}
               </ul>
