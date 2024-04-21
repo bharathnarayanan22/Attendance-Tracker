@@ -317,7 +317,7 @@ app.post('/api/enroll', verifyToken, async (req, res) => {
 app.get('/api/classes/:courseId/students', async (req, res) => {
   try {
     const { courseId } = req.params;
-    const selectedClass = await Class.findById(courseId).populate('enrolledStudents', 'name');
+    const selectedClass = await Class.findById(courseId).populate('enrolledStudents', 'name rollNo');
     
     if (!selectedClass) {
       return res.status(404).json({ error: 'Class not found' });

@@ -163,10 +163,40 @@ const Dashboard = () => {
   const displayResult = (result) => {
     if (result.length > 0 && result[0]._label !== 'unknown') {
       setResult(`Detected face: ${result[0]._label}`);
+      // const matchedStudent = enrolledStudents.find((student) => student.name === result[0]._label);
+      // if (matchedStudent) {
+      //   // Perform attendance marking logic
+      //   console.log(`Attendance marked for ${result[0]._label}`);
+      // }
+      markAttendance(result[0]._label);
     } else {
       setResult('No face detected or unknown face');
     }
   };
+
+  const markAttendance = (detectedName) => {
+    const matchedStudent = enrolledStudents.find((student) => student.name === detectedName);
+    if (matchedStudent) {
+      console.log(`Attendance marked for ${detectedName}`);
+      // Update attendance status and timestamp for the matched student
+      const updatedStudents = enrolledStudents.map((student) => {
+        if (student.name === detectedName) {
+          return {
+            ...student,
+            attendance: {
+              present: true,
+              timestamp: new Date().toLocaleString() // Capture current date and time
+            }
+          };
+        }
+        return student;
+      });
+  
+      // Update enrolledStudents state with the updated attendance status
+      setEnrolledStudents(updatedStudents);
+    }
+  };
+  
 
   const handleTakeAttendance = async () => {
     if (!cameraStarted) {
@@ -212,14 +242,38 @@ const Dashboard = () => {
                   <button onClick={handleTakeAttendance}>Start Camera</button>
                 )}
               </div>
-              <ul>
+              <table className={styles.studentTable}>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Roll Number</th>
+                  <th>Present</th>
+                  <th>Date & Time of Attendance</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
                 {enrolledStudents.map((student) => (
-                  <li key={student._id}>
-                    {student.name}
-                    <button onClick={() => handleUnenroll(selectedCourse, student._id)}>Unenroll</button>
-                  </li>
+                  <tr key={student._id}>
+                    <td>{student.name}</td>
+                    <td>{student.rollNo}</td>
+                    <td>
+                      {student.attendance && student.attendance.present ? 'Yes' : 'No'}
+                    </td>
+                    <td>
+                      {student.attendance && student.attendance.timestamp
+                        ? student.attendance.timestamp
+                        : 'N/A'}
+                    </td>
+                    <td>
+                      <button onClick={() => handleUnenroll(selectedCourse, student._id)}>
+                        Unenroll
+                      </button>
+                    </td>
+                  </tr>
                 ))}
-              </ul>
+              </tbody>
+            </table>
             </div>
           );
         } else {
