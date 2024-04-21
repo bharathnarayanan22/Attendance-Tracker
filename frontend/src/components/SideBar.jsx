@@ -2,10 +2,19 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import styles from './Sidebar.module.css';
 
-const Sidebar = ({ onSelectMenuItem }) => {
+const SideBar = ({ onSelectMenuItem }) => {
   const handleMenuItemClick = (menuItem) => {
     onSelectMenuItem(menuItem);
   };
+  
+  const handleLogout = async () => {
+    try {
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
+
 
   return (
     <div className={styles.sidebar}>
@@ -22,11 +31,12 @@ const Sidebar = ({ onSelectMenuItem }) => {
         <li onClick={() => handleMenuItemClick('enroll-students')}>
           <Link to="/dashboard">Enroll Student</Link>
         </li>
-        <li><Link to="/logout">Logout</Link></li>
       </ul>
+      <div className={styles.logout}>
+        <button onClick={handleLogout}>Logout</button>
+      </div>
     </div>
   );
 };
 
-export default Sidebar;
-
+export default SideBar;

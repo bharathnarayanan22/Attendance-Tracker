@@ -28,10 +28,62 @@ app.use(
 app.use(fileUpload({ useTempFiles: true }));
 
 // Connect to MongoDB (make sure MongoDB is running)
-mongoose.connect('mongodb://localhost:27017/AT', {
+// mongoose.connect('mongodb://localhost:27017/AT', {
+//   useNewUrlParser: true,
+//   useUnifiedTopology: true,
+//   serverSelectionTimeoutMS: 5000, 
+//   socketTimeoutMS: 45000,
+// });
+
+// MongoDB connection options
+const mongoOptions = {
   useNewUrlParser: true,
   useUnifiedTopology: true,
+  serverSelectionTimeoutMS: 5000,
+  socketTimeoutMS: 45000,
+};
+
+// Connect to MongoDB
+const connectWithRetry = () => {
+  mongoose.connect('mongodb://localhost:27017/AT', mongoOptions)
+    .then(() => {
+      console.log('MongoDB connected successfully');
+    })
+    .catch((error) => {
+      console.error('MongoDB connection error:', error);
+      setTimeout(connectWithRetry, 5000); // Retry connection after 5 seconds
+    });
+};
+
+connectWithRetry(); // Initial connection attempt
+
+// Handle MongoDB connection events
+mongoose.connection.on('disconnected', () => {
+  console.log('MongoDB disconnected');
 });
+
+mongoose.connection.on('error', (error) => {
+  console.error('MongoDB connection error:', error);
+});
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (error) => {
+  console.error('Unhandled Promise Rejection:', error);
+});
+
+// Handle application termination
+process.on('SIGINT', async () => {
+  try {
+    await mongoose.connection.close();
+    console.log('MongoDB connection closed');
+    process.exit(0);
+  } catch (error) {
+    console.error('Error closing MongoDB connection:', error);
+    process.exit(1);
+  }
+});
+
+
 
 // Load face detection models
 async function loadModels() {

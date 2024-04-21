@@ -1,54 +1,75 @@
 /* Dashboard.module.css */
 
 .dashboard {
-    display: flex;
-    justify-content: space-between;
-    padding: 20px;
-  }
-  
-  .sidebar {
-    width: 20%;
-    background-color: #f0f0f0;
-    padding: 20px;
-    border-radius: 8px;
-  }
-  
-  .content {
-    flex: 1;
-    margin-left: 20px;
-  }
-  
-  .mainContent {
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
-  
-  .courseContainer {
-    margin-top: 20px;
-  }
-  
-  .courseList {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    grid-gap: 20px;
-  }
-  
+  display: flex;
+  justify-content: flex-start; /* Adjust content alignment */
+  padding: 20px;
+}
+
+.content {
+  flex: 1; /* Allow content to expand */
+  margin-left: 17%;
+}
+
+.mainContent {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+  font-size: 24px;
+  color: #333;
+}
+
+h3 {
+  font-size: 20px;
+  margin-bottom: 16px;
+}
+
+.courseBox {
+  flex-basis: calc(50% - 10px); /* Two courses per row with spacing */
+  background-color: #f9f9f9;
+  padding: 20px;
+  margin-bottom: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box; /* Ensure padding is included in width calculation */
+}
+
+@media (max-width: 768px) {
   .courseBox {
-    background-color: #f9f9f9;
-    padding: 15px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    flex-basis: calc(100% - 20px); /* One course per row on smaller screens */
   }
-  
-  .courseBox h4 {
-    font-size: 18px;
-    margin-bottom: 10px;
-  }
-  
-  .courseBox p {
-    font-size: 14px;
-    margin-bottom: 8px;
-  }
-  
+}
+
+.courseBox h4 {
+  font-size: 20px;
+  margin-bottom: 12px;
+}
+
+.courseBox p {
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+
+.deleteButton {
+  background-color: #ff5c5c;
+  color: #fff;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.deleteButton:hover {
+  background-color: #e05252;
+}
+
+.courseList {
+  display: flex;
+  flex-wrap: wrap; /* Allow courses to wrap to the next row */
+  justify-content: space-around; /* Distribute items evenly between rows */
+}

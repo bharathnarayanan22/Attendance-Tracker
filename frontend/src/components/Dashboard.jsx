@@ -15,6 +15,7 @@ const Dashboard = () => {
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [enrolledStudents, setEnrolledStudents] = useState([]);
   const [attendanceResults, setAttendanceResults] = useState([]);
+  const [studentAttendanceHistory, setStudentAttendanceHistory] = useState({});
   const navigate = useNavigate();
 
   const [result, setResult] = useState('');
@@ -49,6 +50,10 @@ const Dashboard = () => {
 
     fetchUserData();
     fetchCourses();
+
+    return () => {
+      stopCamera();
+    };
   }, []);
 
   const handleCourseClick = async (courseId) => {
@@ -105,8 +110,13 @@ const Dashboard = () => {
   };
 
   const handleBack = () => {
+    stopCamera();
+    setCameraStarted(false);
     setSelectedCourse(null);
+    setResult('');
+    setIsLoading(false);
   };
+  
 
   const startCamera = async () => {
     try {
@@ -115,6 +125,16 @@ const Dashboard = () => {
       setCameraStarted(true);
     } catch (error) {
       console.error('Error accessing the camera:', error);
+    }
+  };
+
+  const stopCamera = () => {
+    if (videoRef.current && videoRef.current.srcObject) {
+      const tracks = videoRef.current.srcObject.getTracks();
+      tracks.forEach((track) => track.stop());
+    }
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
     }
   };
 
@@ -212,6 +232,16 @@ const Dashboard = () => {
     }, 5000);
   };
 
+  const showAttendanceHistory = async (studentId) => {
+    try {
+      const response = await axios.get(`http://localhost:5000/api/students/${studentId}/attendance`);
+      console.log(response.data); // Display or process attendance history data
+    } catch (error) {
+      console.error('Error fetching attendance history:', error);
+    }
+  };
+
+
   const renderContent = () => {
     switch (selectedMenuItem) {
       case 'add-student':
@@ -255,7 +285,15 @@ const Dashboard = () => {
               <tbody>
                 {enrolledStudents.map((student) => (
                   <tr key={student._id}>
-                    <td>{student.name}</td>
+                    <td>
+                {/* Render student name as a clickable link */}
+                <button
+                  className={styles.linkButton}
+                  onClick={() => showAttendanceHistory(student)}
+                >
+                  {student.name}
+                </button>
+              </td>
                     <td>{student.rollNo}</td>
                     <td>
                       {student.attendance && student.attendance.present ? 'Yes' : 'No'}
@@ -302,6 +340,7 @@ const Dashboard = () => {
     }
   };
 
+ 
   return (
     <div className={styles.dashboard}>
       <Sidebar onSelectMenuItem={setSelectedMenuItem} />

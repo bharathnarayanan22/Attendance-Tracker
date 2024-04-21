@@ -1,6 +1,6 @@
-// components/AddStudentForm.jsx
 import React, { useState } from 'react';
 import axios from 'axios';
+import styles from './AddStudentForm.module.css'; // Import CSS styles
 
 const AddStudentForm = () => {
   const [studentName, setStudentName] = useState('');
@@ -29,42 +29,43 @@ const AddStudentForm = () => {
   };
 
   return (
-    <div>
+    <div className={styles.formContainer}>
       <h2>Add Student</h2>
-      {successMessage && <p style={{ color: 'green' }}>{successMessage}</p>}
-      {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
+      {successMessage && <p className={`${styles.messageContainer} ${styles.successMessage}`}>{successMessage}</p>}
+      {errorMessage && <p className={`${styles.messageContainer} ${styles.errorMessage}`}>{errorMessage}</p>}
       <form onSubmit={handleSubmit}>
-        <div>
-          <label htmlFor="studentName">Student Name:</label>
+        <div className={styles.inputContainer}>
+          <label htmlFor="studentName" className={styles.label}>Student Name</label>
           <input
             type="text"
             id="studentName"
             value={studentName}
             onChange={(e) => setStudentName(e.target.value)}
+            className={styles.inputField}
             required
           />
-        </div>
-        <div>
-          <label htmlFor="rollNo">Roll No:</label>
+        
+          <label htmlFor="rollNo" className={styles.label}>Roll No</label>
           <input
             type="text"
             id="rollNo"
             value={rollNo}
             onChange={(e) => setRollNo(e.target.value)}
+            className={styles.inputField}
             required
           />
-        </div>
-        <div>
-          <label htmlFor="email">Email:</label>
+        
+          <label htmlFor="email" className={styles.label}>Email</label>
           <input
             type="email"
             id="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            className={styles.inputField}
             required
           />
         </div>
-        <button type="submit">Add Student</button>
+        <button type="submit" className={styles.button}>Add Student</button>
       </form>
     </div>
   );
