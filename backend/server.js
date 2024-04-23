@@ -201,6 +201,7 @@ const classSchema = new mongoose.Schema({
   courseCode: String,
   sessionTiming: String,
   enrolledStudents: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Student' }],
+  attendance: [{ studentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Student' }, present: Boolean, timestamp: Date }]
 });
 
 const Class = mongoose.model('Class', classSchema);
@@ -426,6 +427,53 @@ app.post('/api/classes/:courseId/unenroll', verifyToken, async (req, res) => {
     res.status(500).json({ error: 'Failed to unenroll student' });
   }
 });
+
+
+app.post('/api/classes/:classId/mark-attendance', async (req, res) => {
+  const { studentId, present } = req.body;
+  const { classId } = req.params;
+
+  try {
+    const selectedClass = await Class.findById(classId);
+    if (!selectedClass) {
+      return res.status(404).json({ error: 'Class not found' });
+    }
+
+    // Update attendance for the specified student in the class
+    const existingAttendance = selectedClass.attendance.find(att => att.studentId.toString() === studentId);
+    if (existingAttendance) {
+      existingAttendance.present = present;
+      existingAttendance.timestamp = new Date();
+    } else {
+      selectedClass.attendance.push({ studentId, present, timestamp: new Date() });
+    }
+
+    await selectedClass.save();
+    res.status(200).json({ message: 'Attendance marked successfully' });
+  } catch (error) {
+    console.error('Error marking attendance:', error);
+    res.status(500).json({ error: 'Failed to mark attendance' });
+  }
+});
+
+// Route to fetch attendance for a specific class
+app.get('/api/classes/:classId/attendance', async (req, res) => {
+  const { classId } = req.params;
+
+  try {
+    const selectedClass = await Class.findById(classId);
+    if (!selectedClass) {
+      return res.status(404).json({ error: 'Class not found' });
+    }
+
+    const attendance = selectedClass.attendance;
+    res.status(200).json(attendance);
+  } catch (error) {
+    console.error('Error fetching attendance:', error);
+    res.status(500).json({ error: 'Failed to fetch attendance' });
+  }
+});
+
 
 
 app.listen(PORT, () => {

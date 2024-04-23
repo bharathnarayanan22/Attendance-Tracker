@@ -6,7 +6,7 @@ import EnrollStudentsForm from './EnrollStudentsForm';
 import CreateClassForm from './CreateClassForm';
 import styles from './Dashboard.module.css';
 import { useNavigate } from 'react-router-dom';
-import socketIOClient from 'socket.io-client';
+import AttendanceDisplay from './AttendanceDisplay';
 
 const Dashboard = () => {
   const [username, setUsername] = useState('');
@@ -16,6 +16,8 @@ const Dashboard = () => {
   const [enrolledStudents, setEnrolledStudents] = useState([]);
   const [attendanceResults, setAttendanceResults] = useState([]);
   const [studentAttendanceHistory, setStudentAttendanceHistory] = useState({});
+  const [attendanceMap, setAttendanceMap] = useState({});
+  const [showAttendance, setShowAttendance] = useState(false);
   const navigate = useNavigate();
 
   const [result, setResult] = useState('');
@@ -74,8 +76,10 @@ const Dashboard = () => {
           Authorization: `Bearer ${token}`
         }
       });
-      const updatedCourses = courses.filter((course) => course._id !== courseId);
-      setCourses(updatedCourses);
+      // const updatedCourses = courses.filter((course) => course._id !== courseId);
+      // setCourses(updatedCourses);
+      setCourses((prevCourses) => prevCourses.filter((course) => course._id !== courseId));
+      window.location.reload();
     } catch (error) {
       console.error('Error deleting course:', error);
     }
@@ -199,21 +203,26 @@ const Dashboard = () => {
     if (matchedStudent) {
       console.log(`Attendance marked for ${detectedName}`);
       // Update attendance status and timestamp for the matched student
-      const updatedStudents = enrolledStudents.map((student) => {
-        if (student.name === detectedName) {
-          return {
-            ...student,
-            attendance: {
-              present: true,
-              timestamp: new Date().toLocaleString() // Capture current date and time
-            }
-          };
-        }
-        return student;
-      });
-  
-      // Update enrolledStudents state with the updated attendance status
-      setEnrolledStudents(updatedStudents);
+      const updatedAttendanceMap = { ...attendanceMap };
+
+    if (matchedStudent._id in updatedAttendanceMap) {
+      // Student already has attendance recorded, toggle present status
+      updatedAttendanceMap[matchedStudent._id] = {
+        ...updatedAttendanceMap[matchedStudent._id],
+        present: !updatedAttendanceMap[matchedStudent._id].present,
+        timestamp: new Date().toLocaleString(),
+      };
+    } else {
+      // Add new attendance entry for the student
+      updatedAttendanceMap[matchedStudent._id] = {
+        present: true,
+        timestamp: new Date().toLocaleString(),
+      };
+    }
+
+    // Update attendanceMap state with the updated attendance information
+    setAttendanceMap(updatedAttendanceMap);
+    storeAttendance(matchedStudent._id, updatedAttendanceMap[matchedStudent._id].present);
     }
   };
   
@@ -232,13 +241,37 @@ const Dashboard = () => {
     }, 5000);
   };
 
-  const showAttendanceHistory = async (studentId) => {
+  // const showAttendanceHistory = async (studentId) => {
+  //   try {
+  //     const response = await axios.get(`http://localhost:5000/api/students/${studentId}/attendance`);
+  //     console.log(response.data); // Display or process attendance history data
+  //   } catch (error) {
+  //     console.error('Error fetching attendance history:', error);
+  //   }
+  // };
+
+  const storeAttendance = async (studentId, present) => {
     try {
-      const response = await axios.get(`http://localhost:5000/api/students/${studentId}/attendance`);
-      console.log(response.data); // Display or process attendance history data
+      const token = localStorage.getItem('token');
+      const response = await axios.post(
+        `http://localhost:5000/api/classes/${selectedCourse}/mark-attendance`,
+        { studentId, present },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+  
+      console.log(response.data.message); // Log success message
     } catch (error) {
-      console.error('Error fetching attendance history:', error);
+      console.error('Error marking attendance:', error);
     }
+  };
+  
+  const handleViewAttendance = (courseId) => {
+    setSelectedCourse(courseId);
+    setShowAttendance(true); // Set the selected course ID to display attendance
   };
 
 
@@ -285,24 +318,12 @@ const Dashboard = () => {
               <tbody>
                 {enrolledStudents.map((student) => (
                   <tr key={student._id}>
-                    <td>
-                {/* Render student name as a clickable link */}
-                <button
-                  className={styles.linkButton}
-                  onClick={() => showAttendanceHistory(student)}
-                >
-                  {student.name}
-                </button>
-              </td>
+                    <td>  {student.name} </td>
                     <td>{student.rollNo}</td>
-                    <td>
-                      {student.attendance && student.attendance.present ? 'Yes' : 'No'}
-                    </td>
-                    <td>
-                      {student.attendance && student.attendance.timestamp
-                        ? student.attendance.timestamp
-                        : 'N/A'}
-                    </td>
+                    {/* <td>{attendanceMap[student._id] && attendanceMap[student._id].present ? 'Yes' : 'No'}</td> */}
+                    <td><input type="checkbox" checked={attendanceMap[student._id] && attendanceMap[student._id].present}
+                    onChange={(e) => storeAttendance(student._id, e.target.checked)}/></td>
+                    <td>{attendanceMap[student._id] ? attendanceMap[student._id].timestamp : 'N/A'}</td>
                     <td>
                       <button onClick={() => handleUnenroll(selectedCourse, student._id)}>
                         Unenroll
@@ -330,10 +351,14 @@ const Dashboard = () => {
                       <button className={styles.deleteButton} onClick={() => handleDeleteCourse(course._id)}>
                         Delete
                       </button>
+                      <button className={styles.deleteButton} onClick={() => handleViewAttendance(course._id)}>View Attendance</button>
                     </div>
                   ))}
                 </div>
               </div>
+              {/* {showAttendance && selectedCourse && (
+          <AttendanceDisplay classId={selectedCourse} />
+        )} */}
             </div>
           );
         }

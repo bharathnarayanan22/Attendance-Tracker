@@ -5,7 +5,9 @@ import styles from './CreateClassForm.module.css'; // Import CSS styles
 const CreateClassForm = () => {
   const [courseName, setCourseName] = useState('');
   const [courseCode, setCourseCode] = useState('');
-  const [sessionTiming, setSessionTiming] = useState('');
+  // const [sessionTiming, setSessionTiming] = useState('');
+  const [startTime, setStartTime] = useState('');
+  const [endTime, setEndTime] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -16,13 +18,15 @@ const CreateClassForm = () => {
       const response = await axios.post('http://localhost:5000/api/classes', {
         courseName,
         courseCode,
-        sessionTiming,
+        sessionTiming: `${startTime} - ${endTime}`,
       });
 
       setSuccessMessage(response.data.message);
       setCourseName('');
       setCourseCode('');
-      setSessionTiming('');
+      // setSessionTiming('');
+      setStartTime('');
+      setEndTime('');
     } catch (error) {
       setErrorMessage(error.response.data.error);
     }
@@ -55,15 +59,39 @@ const CreateClassForm = () => {
             required
           />
         
-          <label htmlFor="sessionTiming" className={styles.label}>Session Timing</label>
+          {/* <label htmlFor="sessionTiming" className={styles.label}>Session Timing</label>
           <input
-            type="text"
+            type="time"
             id="sessionTiming"
             value={sessionTiming}
             onChange={(e) => setSessionTiming(e.target.value)}
             className={styles.inputField}
             required
-          />
+          /> */}
+
+          <label htmlFor="startTime" className={styles.label}>
+              Start Time
+            </label>
+            <input
+              type="time"
+              id="startTime"
+              value={startTime}
+              onChange={(e) => setStartTime(e.target.value)}
+              className={styles.inputField}
+              required
+            />
+
+            <label htmlFor="endTime" className={styles.label}>
+              End Time
+            </label>
+            <input
+              type="time"
+              id="endTime"
+              value={endTime}
+              onChange={(e) => setEndTime(e.target.value)}
+              className={styles.inputField}
+              required
+            />
         
         <button type="submit" className={styles.button}>Create Class</button>
       </form>
