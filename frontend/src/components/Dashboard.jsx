@@ -79,7 +79,7 @@ const Dashboard = () => {
       // const updatedCourses = courses.filter((course) => course._id !== courseId);
       // setCourses(updatedCourses);
       setCourses((prevCourses) => prevCourses.filter((course) => course._id !== courseId));
-      window.location.reload();
+      // window.location.reload();
     } catch (error) {
       console.error('Error deleting course:', error);
     }
@@ -415,7 +415,7 @@ const Dashboard = () => {
                 <h3>Available Courses</h3>
                 <div className={styles.courseList}>
                   {courses.map((course) => (
-                    <div key={course._id} className={styles.courseBox} onClick={() => handleCourseClick(course._id)}>
+                    <div key={course._id} className={styles.courseBox} >
                       <h4>{course.courseName}</h4>
                       <p>Course Code: {course.courseCode}</p>
                       <p>Timing: {course.sessionTiming}</p>
@@ -424,6 +424,7 @@ const Dashboard = () => {
                         Delete
                       </button>
                       <button className={styles.deleteButton} onClick={() => handleViewAttendance(course._id)}>View Attendance</button>
+                      <button className={styles.deleteButton} onClick={() => handleCourseClick(course._id)}>View course</button>
                     </div>
                   ))}
                 </div>

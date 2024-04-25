@@ -2,3 +2,54 @@ html,body {
   margin: 0;
   padding: 0;
 }
+
+
+.sidebar
+{
+  color: #fff;
+}
+.logo{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  padding: 10px;
+}
+.logo-icon{
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  border-radius: 50%;
+  background-color: rgba(28, 17, 41, 0.88);
+}
+.menu-bar
+{
+  height: 80vh;
+  margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  font-size: 1rem;
+  position: relative;
+}
+.toggle-theme-btn
+{
+  position: absolute;
+  bottom: 30px;
+  left :20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+}
+.toggle{
+  margin-left :15px;
+  
+}
+
+.layout{
+  max-width: 20px;
+}
