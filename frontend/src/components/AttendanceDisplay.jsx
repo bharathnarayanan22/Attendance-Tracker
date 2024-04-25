@@ -5,11 +5,13 @@ import axios from 'axios';
 
 const AttendanceDisplay = ({ courseId }) => {
   const [attendanceData, setAttendanceData] = useState([]);
+  console.log(courseId)
 
   useEffect(() => {
     const fetchAttendance = async () => {
       try {
         const response = await axios.get(`http://localhost:5000/api/classes/${courseId}/attendance`);
+        console.log(response.data)
         setAttendanceData(response.data);
       } catch (error) {
         console.error('Error fetching attendance:', error);

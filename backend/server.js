@@ -480,17 +480,17 @@ app.post('/api/classes/:courseId/attendance', async(req, res) => {
 
 
 // Route to fetch attendance for a specific class
-app.get('/api/classes/:classId/attendance', async (req, res) => {
-  const { classId } = req.params;
+app.get('/api/classes/:courseId/attendance', async (req, res) => {
+  const { courseId } = req.params;
 
   try {
-    const selectedClass = await Class.findById(classId).populate('attendance.studentId', 'name');
+    const selectedClass = await Class.findById(courseId).populate('attendance.studentId', 'name');
     if (!selectedClass) {
       return res.status(404).json({ error: 'Class not found' });
     }
 
     const attendance = selectedClass.attendance.map((record) => ({
-      studentId: record.studentId._id,
+      // studentId: record.studentId._id,
       studentName: record.studentId.name,
       present: record.present,
       timestamp: record.timestamp,

@@ -14,17 +14,14 @@ const Dashboard = () => {
   const [courses, setCourses] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [enrolledStudents, setEnrolledStudents] = useState([]);
-  const [attendanceResults, setAttendanceResults] = useState([]);
-  const [studentAttendanceHistory, setStudentAttendanceHistory] = useState({});
   const [attendanceMap, setAttendanceMap] = useState({});
   const [showAttendance, setShowAttendance] = useState(false);
-  const navigate = useNavigate();
-
   const [result, setResult] = useState('');
   const videoRef = useRef(null);
   const intervalRef = useRef(null);
   const [cameraStarted, setCameraStarted] = useState(false);
-  const [isLoading, setIsLoading] = useState(false); // Loading state
+  const [isLoading, setIsLoading] = useState(false);
+
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -76,8 +73,6 @@ const Dashboard = () => {
           Authorization: `Bearer ${token}`
         }
       });
-      // const updatedCourses = courses.filter((course) => course._id !== courseId);
-      // setCourses(updatedCourses);
       setCourses((prevCourses) => prevCourses.filter((course) => course._id !== courseId));
       // window.location.reload();
     } catch (error) {
@@ -187,55 +182,11 @@ const Dashboard = () => {
   const displayResult = (result) => {
     if (result.length > 0 && result[0]._label !== 'unknown') {
       setResult(`Detected face: ${result[0]._label}`);
-      // const matchedStudent = enrolledStudents.find((student) => student.name === result[0]._label);
-      // if (matchedStudent) {
-      //   // Perform attendance marking logic
-      //   console.log(`Attendance marked for ${result[0]._label}`);
-      // }
       markAttendance(result[0]._label);
     } else {
       setResult('No face detected or unknown face');
     }
   };
-
-  // const markAttendance = async (detectedName) => {
-  //   try {
-  //     if (!selectedCourse) {
-  //       console.log('No course selected.'); // Handle this case appropriately
-  //       return;
-  //     }
-  
-  //     const matchedStudent = enrolledStudents.find((student) => student.name === detectedName);
-  //     if (!matchedStudent) {
-  //       console.log(`Student '${detectedName}' not found in enrolled students`);
-  //       return;
-  //     }
-  //     console.log(`Attendance Marked for ${detectedName}`)
-  
-  //     const updatedAttendanceMap = { ...attendanceMap };
-  
-  //     const studentId = matchedStudent._id;
-  //     const present = studentId in updatedAttendanceMap ? !updatedAttendanceMap[studentId].present : true;
-  //     const timestamp = new Date().toLocaleString();
-  
-  //     updatedAttendanceMap[studentId] = { present, timestamp };
-  //     setAttendanceMap(updatedAttendanceMap);
-  
-  //     const token = localStorage.getItem('token');
-  //     await axios.post(
-  //       `http://localhost:5000/api/classes/${selectedCourse}/attendance`,
-  //       { studentId, present, timestamp },
-  //       {
-  //         headers: {
-  //           Authorization: `Bearer ${token}`
-  //         }
-  //       }
-  //     );
-  //   } catch (error) {
-  //     console.error('Error marking attendance:', error);
-  //   }
-  // };
-
 
   const markAttendance = (detectedName) => {
     const matchedStudent = enrolledStudents.find((student) => student.name === detectedName);
@@ -264,30 +215,7 @@ const Dashboard = () => {
     storeAttendance(matchedStudent._id, updatedAttendanceMap[matchedStudent._id].present);
     }
   };
-
-  // const markAttendance = (detectedName) => {
-  //   const matchedStudent = enrolledStudents.find((student) => student.name === detectedName);
-  //   if (matchedStudent) {
-  //     console.log(`Attendance marked for ${detectedName}`);
-  //     const updatedStudents = enrolledStudents.map((student) => {
-  //       if (student.name === detectedName) {
-  //         return {
-  //           ...student,
-  //           attendance: {
-  //             present: true,
-  //             timestamp: new Date().toLocaleString()
-  //           }
-  //         };
-  //       }
-  //       return student;
-  //     });
-  //     setEnrolledStudents(updatedStudents);
-  //   }
-  // };
   
-  
-  
-
   const handleTakeAttendance = async () => {
     if (!cameraStarted) {
       startCamera();
@@ -323,6 +251,7 @@ const Dashboard = () => {
 
   
   const handleViewAttendance = (courseId) => {
+    console.log(courseId)
     setSelectedCourse(courseId);
     setShowAttendance(true); // Set the selected course ID to display attendance
   };
@@ -343,7 +272,7 @@ const Dashboard = () => {
             <div className={styles.mainContent}>
               <div className={styles.courseDetailsContainer}>
                 <div className={styles.courseDetailsHeader}>
-                  <h2>Course Details - {selectedCourse.courseName}</h2>
+                  <h2>Course Details - {selectedCourse?.courseName}</h2>
                   <button onClick={handleBack}>Back</button>
                 </div>
                 <table className={styles.studentTable}>
@@ -402,8 +331,9 @@ const Dashboard = () => {
                 ) : (
                   <button onClick={handleTakeAttendance}>Start Camera</button>
                 )}
-              
+              <button className={styles.deleteButton} onClick={() => handleViewAttendance(selectedCourse)}>View Attendance</button>
                 </div>
+                {showAttendance && <AttendanceDisplay courseId={selectedCourse} />}
               </div>
             </div>
           );
@@ -423,13 +353,13 @@ const Dashboard = () => {
                       <button className={styles.deleteButton} onClick={() => handleDeleteCourse(course._id)}>
                         Delete
                       </button>
-                      <button className={styles.deleteButton} onClick={() => handleViewAttendance(course._id)}>View Attendance</button>
+                      {/* <button className={styles.deleteButton} onClick={() => handleViewAttendance(course._id)}>View Attendance</button> */}
                       <button className={styles.deleteButton} onClick={() => handleCourseClick(course._id)}>View course</button>
                     </div>
                   ))}
                 </div>
               </div>
-              {showAttendance && <AttendanceDisplay courseId={selectedCourse} />}
+              
             </div>
           );
         }
