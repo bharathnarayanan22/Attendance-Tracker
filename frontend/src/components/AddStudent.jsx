@@ -33,7 +33,7 @@ const AddStudentForm = () => {
       <h2>Add Student</h2>
       {successMessage && <p className={`${styles.messageContainer} ${styles.successMessage}`}>{successMessage}</p>}
       {errorMessage && <p className={`${styles.messageContainer} ${styles.errorMessage}`}>{errorMessage}</p>}
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} className={styles.innerForm}>
         <div className={styles.inputContainer}>
           <label htmlFor="studentName" className={styles.label}>Student Name</label>
           <input

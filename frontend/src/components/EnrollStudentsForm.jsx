@@ -60,7 +60,7 @@ const EnrollStudentsForm = () => {
   return (
     <div className={styles.formContainer}>
       <h2>Enroll Students to Course</h2>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} className={styles.innerForm}>
         <label htmlFor="courseId" className={styles.label}>Select Course:</label>
         <select id="courseId" value={courseId} onChange={handleCourseChange} className={styles.selectField} required>
           <option value="">Select a course</option>

@@ -456,24 +456,52 @@ app.post('/api/classes/:classId/mark-attendance', async (req, res) => {
   }
 });
 
+// Example backend route handler for marking attendance
+app.post('/api/classes/:courseId/attendance', async(req, res) => {
+  // const { courseId } = req.params;
+  // const { studentId, present, timestamp } = req.body;
+
+  try {
+
+    // const updatedAttendance = await Class.findOneAndUpdate(
+    //   { courseId, studentId },
+    //   { present, timestamp },
+    //   { new: true, upsert: true }
+    // );
+
+    // res.status(200).json({ message: 'Attendance marked successfully', updatedAttendance });
+    res.status(200).json({ message: 'Attendance marked successfully' })
+  } catch (error) {
+    console.error('Error marking attendance:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
+
 // Route to fetch attendance for a specific class
 app.get('/api/classes/:classId/attendance', async (req, res) => {
   const { classId } = req.params;
 
   try {
-    const selectedClass = await Class.findById(classId);
+    const selectedClass = await Class.findById(classId).populate('attendance.studentId', 'name');
     if (!selectedClass) {
       return res.status(404).json({ error: 'Class not found' });
     }
 
-    const attendance = selectedClass.attendance;
+    const attendance = selectedClass.attendance.map((record) => ({
+      studentId: record.studentId._id,
+      studentName: record.studentId.name,
+      present: record.present,
+      timestamp: record.timestamp,
+    }));
+
     res.status(200).json(attendance);
   } catch (error) {
     console.error('Error fetching attendance:', error);
     res.status(500).json({ error: 'Failed to fetch attendance' });
   }
 });
-
 
 
 app.listen(PORT, () => {

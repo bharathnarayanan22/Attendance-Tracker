@@ -1,38 +1,40 @@
+// AttendanceDisplay.js
+
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const AttendanceDisplay = ({ classId }) => {
-  const [attendance, setAttendance] = useState([]);
+const AttendanceDisplay = ({ courseId }) => {
+  const [attendanceData, setAttendanceData] = useState([]);
 
   useEffect(() => {
     const fetchAttendance = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/classes/${classId}/attendance`);
-        setAttendance(response.data);
+        const response = await axios.get(`http://localhost:5000/api/classes/${courseId}/attendance`);
+        setAttendanceData(response.data);
       } catch (error) {
         console.error('Error fetching attendance:', error);
       }
     };
 
     fetchAttendance();
-  }, [classId]);
+  }, [courseId]);
 
   return (
     <div>
-      <h2>Attendance for Selected Class</h2>
+      <h2>Attendance for Class</h2>
       <table>
         <thead>
           <tr>
             <th>Student Name</th>
-            <th>Attendance Status</th>
-            <th>Timestamp</th>
+            <th>Present</th>
+            <th>Date & Time</th>
           </tr>
         </thead>
         <tbody>
-          {attendance.map((record) => (
-            <tr key={record._id}>
-              <td>{record.studentId.name}</td>
-              <td>{record.present ? 'Present' : 'Absent'}</td>
+          {attendanceData.map((record) => (
+            <tr key={record.studentId}>
+              <td>{record.studentName}</td>
+              <td>{record.present ? 'Yes' : 'No'}</td>
               <td>{new Date(record.timestamp).toLocaleString()}</td>
             </tr>
           ))}

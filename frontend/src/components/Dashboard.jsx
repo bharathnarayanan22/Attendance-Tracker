@@ -134,12 +134,12 @@ const Dashboard = () => {
 
   const stopCamera = () => {
     if (videoRef.current && videoRef.current.srcObject) {
-      const tracks = videoRef.current.srcObject.getTracks();
+      const stream = videoRef.current.srcObject;
+      const tracks = stream.getTracks();
       tracks.forEach((track) => track.stop());
+      videoRef.current.srcObject = null;
     }
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-    }
+    setCameraStarted(false);
   };
 
   const takeSnapshot = () => {
@@ -198,6 +198,45 @@ const Dashboard = () => {
     }
   };
 
+  // const markAttendance = async (detectedName) => {
+  //   try {
+  //     if (!selectedCourse) {
+  //       console.log('No course selected.'); // Handle this case appropriately
+  //       return;
+  //     }
+  
+  //     const matchedStudent = enrolledStudents.find((student) => student.name === detectedName);
+  //     if (!matchedStudent) {
+  //       console.log(`Student '${detectedName}' not found in enrolled students`);
+  //       return;
+  //     }
+  //     console.log(`Attendance Marked for ${detectedName}`)
+  
+  //     const updatedAttendanceMap = { ...attendanceMap };
+  
+  //     const studentId = matchedStudent._id;
+  //     const present = studentId in updatedAttendanceMap ? !updatedAttendanceMap[studentId].present : true;
+  //     const timestamp = new Date().toLocaleString();
+  
+  //     updatedAttendanceMap[studentId] = { present, timestamp };
+  //     setAttendanceMap(updatedAttendanceMap);
+  
+  //     const token = localStorage.getItem('token');
+  //     await axios.post(
+  //       `http://localhost:5000/api/classes/${selectedCourse}/attendance`,
+  //       { studentId, present, timestamp },
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${token}`
+  //         }
+  //       }
+  //     );
+  //   } catch (error) {
+  //     console.error('Error marking attendance:', error);
+  //   }
+  // };
+
+
   const markAttendance = (detectedName) => {
     const matchedStudent = enrolledStudents.find((student) => student.name === detectedName);
     if (matchedStudent) {
@@ -225,6 +264,28 @@ const Dashboard = () => {
     storeAttendance(matchedStudent._id, updatedAttendanceMap[matchedStudent._id].present);
     }
   };
+
+  // const markAttendance = (detectedName) => {
+  //   const matchedStudent = enrolledStudents.find((student) => student.name === detectedName);
+  //   if (matchedStudent) {
+  //     console.log(`Attendance marked for ${detectedName}`);
+  //     const updatedStudents = enrolledStudents.map((student) => {
+  //       if (student.name === detectedName) {
+  //         return {
+  //           ...student,
+  //           attendance: {
+  //             present: true,
+  //             timestamp: new Date().toLocaleString()
+  //           }
+  //         };
+  //       }
+  //       return student;
+  //     });
+  //     setEnrolledStudents(updatedStudents);
+  //   }
+  // };
+  
+  
   
 
   const handleTakeAttendance = async () => {
@@ -238,17 +299,8 @@ const Dashboard = () => {
     intervalRef.current = setInterval(async () => {
       await sendSnapshot();
       setIsLoading(false); // Reset loading state after sending snapshot
-    }, 5000);
+    }, 30000);
   };
-
-  // const showAttendanceHistory = async (studentId) => {
-  //   try {
-  //     const response = await axios.get(`http://localhost:5000/api/students/${studentId}/attendance`);
-  //     console.log(response.data); // Display or process attendance history data
-  //   } catch (error) {
-  //     console.error('Error fetching attendance history:', error);
-  //   }
-  // };
 
   const storeAttendance = async (studentId, present) => {
     try {
@@ -263,11 +315,12 @@ const Dashboard = () => {
         }
       );
   
-      console.log(response.data.message); // Log success message
+      console.log(response.data.message); 
     } catch (error) {
       console.error('Error marking attendance:', error);
     }
   };
+
   
   const handleViewAttendance = (courseId) => {
     setSelectedCourse(courseId);
@@ -288,9 +341,54 @@ const Dashboard = () => {
         if (selectedCourse) {
           return (
             <div className={styles.mainContent}>
-              <h2>Enrolled Students for Selected Course</h2>
-              <button onClick={handleBack}>Back</button>
-              <div>
+              <div className={styles.courseDetailsContainer}>
+                <div className={styles.courseDetailsHeader}>
+                  <h2>Course Details - {selectedCourse.courseName}</h2>
+                  <button onClick={handleBack}>Back</button>
+                </div>
+                <table className={styles.studentTable}>
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Roll Number</th>
+                      <th>Attendance</th>
+                      <th>Date & Time of Attendance</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {enrolledStudents.map((student) => (
+                      <tr key={student._id}>
+                        <td>{student.name}</td>
+                        <td>{student.rollNo}</td>
+                        <td>
+                          <input
+                            type="checkbox"
+                            checked={attendanceMap[student._id] && attendanceMap[student._id].present}
+                            className={styles.attendanceCheckbox}
+                            disabled
+                          /></td>
+                            {/* <td><input type="checkbox" checked={attendanceMap[student._id] && attendanceMap[student._id].present}
+                    onChange={(e) => storeAttendance(student._id, e.target.checked)} className={styles.attendanceCheckbox} disabled/></td> */}
+                        
+                        <td>{attendanceMap[student._id] ? attendanceMap[student._id].timestamp : 'N/A'}</td>
+                        
+                        {/* <td className={styles.attendanceCheckbox}>
+                      {student.attendance && student.attendance.present ? 'Yes' : 'No'}
+                    </td>
+                    <td>
+                      {student.attendance && student.attendance.timestamp
+                        ? student.attendance.timestamp
+                        : 'N/A'}
+                    </td> */}
+                    <td>
+                          <button onClick={() => handleUnenroll(selectedCourse._id, student._id)}>Unenroll</button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <div className={styles.studentActions}>              
                 {cameraStarted ? (
                   <div>
                     <video ref={videoRef} autoPlay />
@@ -304,38 +402,12 @@ const Dashboard = () => {
                 ) : (
                   <button onClick={handleTakeAttendance}>Start Camera</button>
                 )}
+              
+                </div>
               </div>
-              <table className={styles.studentTable}>
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Roll Number</th>
-                  <th>Present</th>
-                  <th>Date & Time of Attendance</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {enrolledStudents.map((student) => (
-                  <tr key={student._id}>
-                    <td>  {student.name} </td>
-                    <td>{student.rollNo}</td>
-                    {/* <td>{attendanceMap[student._id] && attendanceMap[student._id].present ? 'Yes' : 'No'}</td> */}
-                    <td><input type="checkbox" checked={attendanceMap[student._id] && attendanceMap[student._id].present}
-                    onChange={(e) => storeAttendance(student._id, e.target.checked)}/></td>
-                    <td>{attendanceMap[student._id] ? attendanceMap[student._id].timestamp : 'N/A'}</td>
-                    <td>
-                      <button onClick={() => handleUnenroll(selectedCourse, student._id)}>
-                        Unenroll
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
             </div>
           );
-        } else {
+        }else {
           return (
             <div className={styles.mainContent}>
               <h2>Welcome to Dashboard, {username}!</h2>
@@ -356,9 +428,7 @@ const Dashboard = () => {
                   ))}
                 </div>
               </div>
-              {/* {showAttendance && selectedCourse && (
-          <AttendanceDisplay classId={selectedCourse} />
-        )} */}
+              {showAttendance && <AttendanceDisplay courseId={selectedCourse} />}
             </div>
           );
         }
