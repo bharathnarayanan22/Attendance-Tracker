@@ -44,7 +44,7 @@ h3 {
 
 @media (max-width: 768px) {
   .courseBox {
-    flex-basis: calc(100% - 20px); /* One course per row on smaller screens */
+    flex-basis: calc(100% - 10px); /* One course per row on smaller screens */
   }
 }
 
@@ -74,8 +74,8 @@ h3 {
 
 .courseList {
   display: flex;
-  flex-wrap: wrap; /* Allow courses to wrap to the next row */
-  justify-content: space-around; /* Distribute items evenly between rows */
+  flex-wrap: wrap;
+  justify-content: space-around; 
 }
 
 
@@ -144,3 +144,11 @@ h3 {
     font-size: 14px;
   }
 }
+
+.b1 {
+  display: flex;
+  align-items:flex-start;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+

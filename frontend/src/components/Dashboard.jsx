@@ -83,6 +83,7 @@ const Dashboard = () => {
   const handleUnenroll = async (courseId, studentId) => {
     try {
       const token = localStorage.getItem('token');
+      console.log(courseId);
       await axios.post(
         `http://localhost:5000/api/classes/${courseId}/unenroll`,
         { studentId },
@@ -92,7 +93,6 @@ const Dashboard = () => {
           }
         }
       );
-
       // After unenrollment, update the list of enrolled students for the course
       const updatedCourses = courses.map((course) => {
         if (course._id === courseId) {
@@ -101,12 +101,12 @@ const Dashboard = () => {
         }
         return course;
       });
-
       setCourses(updatedCourses);
     } catch (error) {
       console.error('Error unenrolling student:', error);
     }
   };
+  
 
   const handleBack = () => {
     stopCamera();
@@ -192,25 +192,22 @@ const Dashboard = () => {
     const matchedStudent = enrolledStudents.find((student) => student.name === detectedName);
     if (matchedStudent) {
       console.log(`Attendance marked for ${detectedName}`);
-      // Update attendance status and timestamp for the matched student
       const updatedAttendanceMap = { ...attendanceMap };
 
     if (matchedStudent._id in updatedAttendanceMap) {
-      // Student already has attendance recorded, toggle present status
       updatedAttendanceMap[matchedStudent._id] = {
         ...updatedAttendanceMap[matchedStudent._id],
         present: !updatedAttendanceMap[matchedStudent._id].present,
         timestamp: new Date().toLocaleString(),
       };
     } else {
-      // Add new attendance entry for the student
+
       updatedAttendanceMap[matchedStudent._id] = {
         present: true,
         timestamp: new Date().toLocaleString(),
       };
     }
 
-    // Update attendanceMap state with the updated attendance information
     setAttendanceMap(updatedAttendanceMap);
     storeAttendance(matchedStudent._id, updatedAttendanceMap[matchedStudent._id].present);
     }
@@ -222,11 +219,11 @@ const Dashboard = () => {
       setCameraStarted(true);
     }
 
-    setIsLoading(true); // Set loading state
+    setIsLoading(true); 
 
     intervalRef.current = setInterval(async () => {
       await sendSnapshot();
-      setIsLoading(false); // Reset loading state after sending snapshot
+      setIsLoading(false); 
     }, 30000);
   };
 
@@ -251,9 +248,9 @@ const Dashboard = () => {
 
   
   const handleViewAttendance = (courseId) => {
-    console.log(courseId)
+    console.log(courseId[courseName])
     setSelectedCourse(courseId);
-    setShowAttendance(true); // Set the selected course ID to display attendance
+    setShowAttendance(true);
   };
 
 
@@ -272,7 +269,7 @@ const Dashboard = () => {
             <div className={styles.mainContent}>
               <div className={styles.courseDetailsContainer}>
                 <div className={styles.courseDetailsHeader}>
-                  <h2>Course Details - {selectedCourse?.courseName}</h2>
+                  <h2>Course Details {selectedCourse?.courseName}</h2>
                   <button onClick={handleBack}>Back</button>
                 </div>
                 <table className={styles.studentTable}>
@@ -295,23 +292,11 @@ const Dashboard = () => {
                             type="checkbox"
                             checked={attendanceMap[student._id] && attendanceMap[student._id].present}
                             className={styles.attendanceCheckbox}
-                            disabled
-                          /></td>
-                            {/* <td><input type="checkbox" checked={attendanceMap[student._id] && attendanceMap[student._id].present}
-                    onChange={(e) => storeAttendance(student._id, e.target.checked)} className={styles.attendanceCheckbox} disabled/></td> */}
-                        
+                            // disabled
+                          /></td>                        
                         <td>{attendanceMap[student._id] ? attendanceMap[student._id].timestamp : 'N/A'}</td>
-                        
-                        {/* <td className={styles.attendanceCheckbox}>
-                      {student.attendance && student.attendance.present ? 'Yes' : 'No'}
-                    </td>
-                    <td>
-                      {student.attendance && student.attendance.timestamp
-                        ? student.attendance.timestamp
-                        : 'N/A'}
-                    </td> */}
-                    <td>
-                          <button onClick={() => handleUnenroll(selectedCourse._id, student._id)}>Unenroll</button>
+                        <td>
+                        <button className="unenroll" onClick={() => handleUnenroll(selectedCourse._id, student._id)}>Unenroll</button>
                         </td>
                       </tr>
                     ))}
@@ -321,7 +306,6 @@ const Dashboard = () => {
                 {cameraStarted ? (
                   <div>
                     <video ref={videoRef} autoPlay />
-                    {/* <button onClick={handleTakeAttendance}>Take Attendance</button> */}
                     {isLoading ? (
                       <p>Loading...</p>
                     ) : (
@@ -350,11 +334,12 @@ const Dashboard = () => {
                       <p>Course Code: {course.courseCode}</p>
                       <p>Timing: {course.sessionTiming}</p>
                       <p>Students Enrolled: {course.enrolledStudents ? course.enrolledStudents.length : 0}</p>
+                      <div className = "b1">
                       <button className={styles.deleteButton} onClick={() => handleDeleteCourse(course._id)}>
-                        Delete
+                        <img src="src/assets/del.png"/>
                       </button>
-                      {/* <button className={styles.deleteButton} onClick={() => handleViewAttendance(course._id)}>View Attendance</button> */}
-                      <button className={styles.deleteButton} onClick={() => handleCourseClick(course._id)}>View course</button>
+                     {"\t"}{"\t"}<button className={"viewcourse"} onClick={() => handleCourseClick(course._id)}>View course</button>
+                      </div>
                     </div>
                   ))}
                 </div>

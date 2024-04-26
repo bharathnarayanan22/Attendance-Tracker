@@ -55,8 +55,8 @@ const SideBar = ({ onSelectMenuItem }) => {
         <Menu.Item key="enrollstudent" icon={<PlusCircleOutlined />} onClick={() => handleMenuItemClick('enroll-students')}>
         <Link to="/dashboard">Enroll Student</Link>
         </Menu.Item>
-        <Menu.Item key="logout" icon={<LogoutOutlined />} danger={true}>
-        <Button onClick={handleLogout}>Logout</Button>
+        <Menu.Item key="logout" icon={<LogoutOutlined />} danger={true} onClick={handleLogout}>
+        Logout
         </Menu.Item>
       
     </Menu>

@@ -14,9 +14,14 @@ const Home = () => {
         <p className={styles.description}>
           Start managing your attendance and stay informed about campus activities today!
         </p>
+        <div style={{display:"flex", justifyContent:"space-around"}}>
         <Link to="/register" className={styles.getStartedButton}>
-          Get Started
+          Take Attendance
         </Link>
+        <Link to="/faculty-detection" className={styles.getStartedButton}>
+          Detect Faculty
+        </Link>
+        </div>
       </div>
     </div>
   );

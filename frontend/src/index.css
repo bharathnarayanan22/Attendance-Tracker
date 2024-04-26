@@ -3,6 +3,18 @@ html,body {
   padding: 0;
 }
 
+table{
+  width: 100%;
+  border-collapse: collapse;
+}
+td,th{
+  padding: 10px;
+  border: 1px solid #ccc;
+}
+th{
+  background-color: rgba(0, 0, 0, 0.6);
+  text-align: left;
+}
 
 .sidebar
 {
@@ -16,14 +28,15 @@ html,body {
   padding: 10px;
 }
 .logo-icon{
-  width: 40px;
-  height: 40px;
+  width: 50px;
+  height: 50px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.5rem;
   border-radius: 50%;
-  background-color: rgba(28, 17, 41, 0.88);
+  background-color:#fff;
+  
 }
 .menu-bar
 {
@@ -52,4 +65,33 @@ html,body {
 
 .layout{
   max-width: 20px;
+}
+
+.download:hover
+{
+  color:white;
+  background-color: #007bff;
+}
+
+.unenroll
+{
+  background-color: #fff;
+  color: black;
+}
+.unenroll:hover
+{
+  background-color:#007bff ;
+  color: #fff;
+}
+
+.viewcourse
+{
+  background-color:#084725;
+  color:#fff;
+  padding:10px;
+  border-radius: 10px;
+}
+.viewcourse:hover{
+  background-color: #fff;
+  color:#090909;
 }

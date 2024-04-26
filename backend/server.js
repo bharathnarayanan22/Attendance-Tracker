@@ -351,6 +351,7 @@ const Enrollment = mongoose.model('Enrollment', enrollmentSchema);
 
 app.post('/api/enroll', verifyToken, async (req, res) => {
   const { courseId, studentIds } = req.body;
+  
 
   try {
     const selectedClass = await Class.findById(courseId);
@@ -403,8 +404,10 @@ app.delete('/api/classes/:id', async (req, res) => {
 
 // Define a route to handle unenrolling a student from a class
 app.post('/api/classes/:courseId/unenroll', verifyToken, async (req, res) => {
-  const { courseId } = req.params;
+  const { courseId } = req.params; // Extract courseId from req.params
   const { studentId } = req.body;
+  console.log('Received Course ID:', courseId);
+  console.log(req.params.courseId);
 
   try {
     const selectedClass = await Class.findById(courseId);
@@ -427,6 +430,7 @@ app.post('/api/classes/:courseId/unenroll', verifyToken, async (req, res) => {
     res.status(500).json({ error: 'Failed to unenroll student' });
   }
 });
+
 
 
 app.post('/api/classes/:classId/mark-attendance', async (req, res) => {
