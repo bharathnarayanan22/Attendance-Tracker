@@ -22,7 +22,6 @@ const Dashboard = () => {
   const [cameraStarted, setCameraStarted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -40,7 +39,12 @@ const Dashboard = () => {
 
     const fetchCourses = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/classes');
+        const token = localStorage.getItem('token');
+        const response = await axios.get('http://localhost:5000/api/classes', {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
         setCourses(response.data);
       } catch (error) {
         console.error('Error fetching courses:', error);
@@ -57,7 +61,12 @@ const Dashboard = () => {
 
   const handleCourseClick = async (courseId) => {
     try {
-      const response = await axios.get(`http://localhost:5000/api/classes/${courseId}/students`);
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`http://localhost:5000/api/classes/${courseId}/students`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
       setEnrolledStudents(response.data);
       setSelectedCourse(courseId);
     } catch (error) {
@@ -74,39 +83,41 @@ const Dashboard = () => {
         }
       });
       setCourses((prevCourses) => prevCourses.filter((course) => course._id !== courseId));
-      // window.location.reload();
     } catch (error) {
       console.error('Error deleting course:', error);
     }
   };
 
   const handleUnenroll = async (courseId, studentId) => {
-    try {
-      const token = localStorage.getItem('token');
-      console.log(courseId);
-      await axios.post(
-        `http://localhost:5000/api/classes/${courseId}/unenroll`,
-        { studentId },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
+  try {
+    const token = localStorage.getItem('token');
+    await axios.post(
+      `http://localhost:5000/api/classes/${courseId}/unenroll`,
+      { studentId },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
         }
-      );
-      // After unenrollment, update the list of enrolled students for the course
-      const updatedCourses = courses.map((course) => {
-        if (course._id === courseId) {
-          const updatedEnrolledStudents = course.enrolledStudents.filter((student) => student._id !== studentId);
-          return { ...course, enrolledStudents: updatedEnrolledStudents };
-        }
-        return course;
-      });
-      setCourses(updatedCourses);
-    } catch (error) {
-      console.error('Error unenrolling student:', error);
+      }
+    );
+    const updatedCourses = courses.map((course) => {
+      if (course._id === courseId) {
+        const updatedEnrolledStudents = course.enrolledStudents.filter((student) => student._id !== studentId);
+        return { ...course, enrolledStudents: updatedEnrolledStudents };
+      }
+      return course;
+    });
+    setCourses(updatedCourses);
+
+    // Update enrolledStudents state
+    if (selectedCourse === courseId) {
+      setEnrolledStudents(updatedCourses.find((course) => course._id === courseId).enrolledStudents);
     }
-  };
-  
+  } catch (error) {
+    console.error('Error unenrolling student:', error);
+  }
+};
+
 
   const handleBack = () => {
     stopCamera();
@@ -248,7 +259,7 @@ const Dashboard = () => {
 
   
   const handleViewAttendance = (courseId) => {
-    console.log(courseId[courseName])
+    console.log(courseId)
     setSelectedCourse(courseId);
     setShowAttendance(true);
   };
@@ -296,8 +307,8 @@ const Dashboard = () => {
                           /></td>                        
                         <td>{attendanceMap[student._id] ? attendanceMap[student._id].timestamp : 'N/A'}</td>
                         <td>
-                        <button className="unenroll" onClick={() => handleUnenroll(selectedCourse._id, student._id)}>Unenroll</button>
-                        </td>
+        <button onClick={() => handleUnenroll(selectedCourse, student._id)} className={styles.backButton}>Unenroll</button>
+      </td>
                       </tr>
                     ))}
                   </tbody>
@@ -336,7 +347,7 @@ const Dashboard = () => {
                       <p>Students Enrolled: {course.enrolledStudents ? course.enrolledStudents.length : 0}</p>
                       <div className = "b1">
                       <button className={styles.deleteButton} onClick={() => handleDeleteCourse(course._id)}>
-                        <img src="src/assets/del.png"/>
+                        <img src="src/assets/del.png" style={{height: "14px", width: "15px"}}/>
                       </button>
                      {"\t"}{"\t"}<button className={"viewcourse"} onClick={() => handleCourseClick(course._id)}>View course</button>
                       </div>

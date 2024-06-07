@@ -82,9 +82,9 @@ const FacultyDetection = () => {
       const detectedName = result[0]._label;
 
       if (detectedName.toLowerCase() === facultyName.toLowerCase()) {
-        setResult(`Faculty: ${detectedName} is found on cam 1`);
+        setResult(`Faculty: ${facultyName} is found on cam 1`);
       } else {
-        setResult(`Faculty: ${detectedName} is not found`);
+        setResult(`Faculty: ${facultyName} is not found`);
       }
     } else {
       setResult('No face detected or unknown face');
@@ -93,12 +93,12 @@ const FacultyDetection = () => {
 
   const handleBackToHome = () => {
     stopCamera();
-    navigate('/');
+    navigate('/home');
   };
 
   const resultStyle = {
     fontSize: '20px',
-    color: result.includes('not') ? '#28a745' : '#28a745',
+    color: result.includes('cam') ? '#28a745' : 'red',
   };
 
   return (

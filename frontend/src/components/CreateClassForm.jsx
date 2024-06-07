@@ -11,22 +11,50 @@ const CreateClassForm = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
 
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+
+  //   try {
+  //     const response = await axios.post('http://localhost:5000/api/classes', {
+  //       courseName,
+  //       courseCode,
+  //       sessionTiming: `${startTime} - ${endTime}`,
+  //     });
+
+  //     setSuccessMessage(response.data.message);
+  //     setCourseName('');
+  //     setCourseCode('');
+  //     // setSessionTiming('');
+  //     setStartTime('');
+  //     setEndTime('');
+  //   } catch (error) {
+  //     setErrorMessage(error.response.data.error);
+  //   }
+  // };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     try {
       const response = await axios.post('http://localhost:5000/api/classes', {
         courseName,
         courseCode,
         sessionTiming: `${startTime} - ${endTime}`,
+      }, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
       });
-
+  
       setSuccessMessage(response.data.message);
       setCourseName('');
       setCourseCode('');
-      // setSessionTiming('');
       setStartTime('');
       setEndTime('');
+      setShowSuccessGif(true); // Show success GIF
+      setTimeout(() => {
+        setShowSuccessGif(false); // Hide success GIF after 2 seconds
+      }, 2000);
     } catch (error) {
       setErrorMessage(error.response.data.error);
     }
@@ -44,6 +72,7 @@ const CreateClassForm = () => {
             type="text"
             id="courseName"
             value={courseName}
+            placeholder='Course Name'
             onChange={(e) => setCourseName(e.target.value)}
             className={styles.inputField}
             required
@@ -53,6 +82,7 @@ const CreateClassForm = () => {
           <input
             type="text"
             id="courseCode"
+            placeholder='Course Code'
             value={courseCode}
             onChange={(e) => setCourseCode(e.target.value)}
             className={styles.inputField}

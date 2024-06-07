@@ -17,7 +17,7 @@ const SideBar = ({ onSelectMenuItem }) => {
   
   const handleLogout = async () => {
     try {
-      window.location.href = '/';
+      window.location.href = '/home';
     } catch (error) {
       console.error('Logout failed:', error);
     }
@@ -41,6 +41,7 @@ const SideBar = ({ onSelectMenuItem }) => {
     <>
     <Layout className='layout'>
       <Sider collapsed={collapsed} collapsible trigger ={null}className='sidebar' theme={darkTheme ? 'dark' :'light'}>
+        <br></br>
         <Logo/>
         <Menu theme={darkTheme ? 'dark' : 'light'} mode='inline' className='menu-bar'>
         <Menu.Item key="home" icon={<HomeOutlined/>} onClick={() => handleMenuItemClick('home')}>

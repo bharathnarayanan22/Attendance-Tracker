@@ -1,0 +1,74 @@
+@keyframes fire {
+  0% {
+    box-shadow: 0 0 5px #ff6f00, 0 0 10px #ff6f00, 0 0 15px #ff6f00, 0 0 20px #ff6f00;
+    border-radius: 50%;
+  }
+  50% {
+    box-shadow: 0 0 10px #ff4500, 0 0 20px #ff4500, 0 0 30px #ff4500, 0 0 40px #ff4500;
+    border-radius: 50%;
+  }
+  100% {
+    box-shadow: 0 0 5px #ff6f00, 0 0 10px #ff6f00, 0 0 15px #ff6f00, 0 0 20px #ff6f00;
+    border-radius: 50%;
+  }
+}
+
+@keyframes zoomAndSpin {
+  0% {
+    transform: scale(5) rotateY(0deg);
+  }
+  50% {
+    transform: scale(1) rotateY(180deg);
+  }
+  100% {
+    transform: scale(1) rotateY(360deg);
+  }
+}
+
+.intro-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: black; /* Background color set to black for fire theme */
+  color: white; /* Text color set to white */
+}
+
+.logo {
+  width: 350px;
+  height: 300px;
+  margin-bottom: 20px;
+  animation: fire 2s infinite, zoomAndSpin 7s forwards; /* Combined animation */
+}
+
+.text-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.intro-text-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.large-text {
+  font-size: 3rem; /* Increase font size for Team Phoenix */
+  color: #f84829; /* Fire color */
+}
+
+.small-text {
+  font-size: 2rem; /* Decrease font size for other lines */
+  color: #ffbe3b; /* Fire color */
+}
+
+.intro-text {
+  margin: 0;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+}

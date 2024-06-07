@@ -196,12 +196,36 @@ const studentSchema = new mongoose.Schema({
 const Student = mongoose.model('Student', studentSchema);
 
 // Define Class Schema
+// const classSchema = new mongoose.Schema({
+//   courseName: String,
+//   courseCode: String,
+//   sessionTiming: String,
+//   enrolledStudents: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Student' }],
+//   attendance: [{ studentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Student' }, present: Boolean, timestamp: Date }]
+// });
+
+// const classSchema = new mongoose.Schema({
+//   courseName: String,
+//   courseCode: String,
+//   sessionTiming: String,
+//   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+//   enrolledStudents: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Student' }],
+//   attendance: [{ studentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Student' }, present: Boolean, timestamp: Date }]
+// });
+
 const classSchema = new mongoose.Schema({
   courseName: String,
   courseCode: String,
   sessionTiming: String,
+  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   enrolledStudents: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Student' }],
-  attendance: [{ studentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Student' }, present: Boolean, timestamp: Date }]
+  attendance: [{ 
+    studentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Student' }, 
+    records: [{
+      present: Boolean, 
+      timestamp: Date
+    }]
+  }]
 });
 
 const Class = mongoose.model('Class', classSchema);
@@ -290,10 +314,16 @@ app.get('/api/user', verifyToken, async (req, res) => {
 // Route to add a new student
 app.post('/api/students', async (req, res) => {
   const { name, rollNo, email } = req.body;
+  const photoFiles = [req.files.photo1.tempFilePath, req.files.photo2.tempFilePath, req.files.photo3.tempFilePath];
 
   try {
     const newStudent = new Student({ name, rollNo, email });
     await newStudent.save();
+
+    let result = await uploadLabeledImages(photoFiles, name);
+    if (!result) {
+      return res.status(500).json({ error: 'Failed to upload face data' });
+    }
 
     res.status(201).json({ message: 'Student added successfully' });
   } catch (error) {
@@ -303,11 +333,27 @@ app.post('/api/students', async (req, res) => {
 });
 
 // Route to create a new class
-app.post('/api/classes', async (req, res) => {
+// app.post('/api/classes', async (req, res) => {
+//   const { courseName, courseCode, sessionTiming } = req.body;
+
+//   try {
+//     const newClass = new Class({ courseName, courseCode, sessionTiming });
+//     await newClass.save();
+
+//     res.status(201).json({ message: 'Class created successfully' });
+//   } catch (error) {
+//     console.error('Error creating class:', error);
+//     res.status(500).json({ error: 'Failed to create class' });
+//   }
+// });
+
+// Route to create a new class
+app.post('/api/classes', verifyToken, async (req, res) => {
   const { courseName, courseCode, sessionTiming } = req.body;
+  const userId = req.userId;
 
   try {
-    const newClass = new Class({ courseName, courseCode, sessionTiming });
+    const newClass = new Class({ courseName, courseCode, sessionTiming, createdBy: userId });
     await newClass.save();
 
     res.status(201).json({ message: 'Class created successfully' });
@@ -317,10 +363,24 @@ app.post('/api/classes', async (req, res) => {
   }
 });
 
-// Route to fetch all classes
-app.get('/api/classes', async (req, res) => {
+// // Route to fetch all classes
+// app.get('/api/classes', async (req, res) => {
+//   try {
+//     const classes = await Class.find({})
+//       .populate('enrolledStudents', 'name rollNo email') // Populate enrolled students
+//       .select('courseName courseCode sessionTiming enrolledStudents'); // Select specific fields
+//     res.status(200).json(classes);
+//   } catch (error) {
+//     console.error('Error fetching classes:', error);
+//     res.status(500).json({ error: 'Failed to fetch classes' });
+//   }
+// });
+
+// Route to fetch all classes created by the logged-in user
+app.get('/api/classes', verifyToken, async (req, res) => {
   try {
-    const classes = await Class.find({})
+    const userId = req.userId;
+    const classes = await Class.find({ createdBy: userId })
       .populate('enrolledStudents', 'name rollNo email') // Populate enrolled students
       .select('courseName courseCode sessionTiming enrolledStudents'); // Select specific fields
     res.status(200).json(classes);
@@ -329,7 +389,6 @@ app.get('/api/classes', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch classes' });
   }
 });
-
 
 // Route to fetch all students
 app.get('/api/students', async (req, res) => {
@@ -349,14 +408,33 @@ const enrollmentSchema = new mongoose.Schema({
 
 const Enrollment = mongoose.model('Enrollment', enrollmentSchema);
 
+// app.post('/api/enroll', verifyToken, async (req, res) => {
+//   const { courseId, studentIds } = req.body;
+  
+
+//   try {
+//     const selectedClass = await Class.findById(courseId);
+//     if (!selectedClass) {
+//       return res.status(404).json({ error: 'Class not found' });
+//     }
+//     selectedClass.enrolledStudents.push(...studentIds);
+//     await selectedClass.save();
+
+//     res.status(200).json({ message: 'Students enrolled successfully', enrolledStudentIds: studentIds });
+//   } catch (error) {
+//     console.error('Enrollment failed:', error);
+//     res.status(500).json({ error: 'Failed to enroll students' });
+//   }
+// });
+
 app.post('/api/enroll', verifyToken, async (req, res) => {
   const { courseId, studentIds } = req.body;
-  
+  const userId = req.userId;
 
   try {
     const selectedClass = await Class.findById(courseId);
-    if (!selectedClass) {
-      return res.status(404).json({ error: 'Class not found' });
+    if (!selectedClass || selectedClass.createdBy.toString() !== userId) {
+      return res.status(404).json({ error: 'Class not found or not created by the logged-in user' });
     }
     selectedClass.enrolledStudents.push(...studentIds);
     await selectedClass.save();
@@ -368,13 +446,31 @@ app.post('/api/enroll', verifyToken, async (req, res) => {
   }
 });
 
-app.get('/api/classes/:courseId/students', async (req, res) => {
+// app.get('/api/classes/:courseId/students', async (req, res) => {
+//   try {
+//     const { courseId } = req.params;
+//     console.log(req.params)
+//     const selectedClass = await Class.findById(courseId).populate('enrolledStudents', 'name rollNo');
+    
+//     if (!selectedClass) {
+//       return res.status(404).json({ error: 'Class not found' });
+//     }
+
+//     res.status(200).json(selectedClass.enrolledStudents);
+//   } catch (error) {
+//     console.error('Error fetching enrolled students:', error);
+//     res.status(500).json({ error: 'Failed to fetch enrolled students' });
+//   }
+// });
+
+app.get('/api/classes/:courseId/students', verifyToken, async (req, res) => {
   try {
     const { courseId } = req.params;
+    const userId = req.userId;
     const selectedClass = await Class.findById(courseId).populate('enrolledStudents', 'name rollNo');
-    
-    if (!selectedClass) {
-      return res.status(404).json({ error: 'Class not found' });
+
+    if (!selectedClass || selectedClass.createdBy.toString() !== userId) {
+      return res.status(404).json({ error: 'Class not found or not created by the logged-in user' });
     }
 
     res.status(200).json(selectedClass.enrolledStudents);
@@ -406,8 +502,6 @@ app.delete('/api/classes/:id', async (req, res) => {
 app.post('/api/classes/:courseId/unenroll', verifyToken, async (req, res) => {
   const { courseId } = req.params; // Extract courseId from req.params
   const { studentId } = req.body;
-  console.log('Received Course ID:', courseId);
-  console.log(req.params.courseId);
 
   try {
     const selectedClass = await Class.findById(courseId);
@@ -432,6 +526,32 @@ app.post('/api/classes/:courseId/unenroll', verifyToken, async (req, res) => {
 });
 
 
+// app.post('/api/classes/:classId/mark-attendance', async (req, res) => {
+//   const { studentId, present } = req.body;
+//   const { classId } = req.params;
+
+//   try {
+//     const selectedClass = await Class.findById(classId);
+//     if (!selectedClass) {
+//       return res.status(404).json({ error: 'Class not found' });
+//     }
+
+//     // Update attendance for the specified student in the class
+//     const existingAttendance = selectedClass.attendance.find(att => att.studentId.toString() === studentId);
+//     if (existingAttendance) {
+//       existingAttendance.present = present;
+//       existingAttendance.timestamp = new Date();
+//     } else {
+//       selectedClass.attendance.push({ studentId, present, timestamp: new Date() });
+//     }
+
+//     await selectedClass.save();
+//     res.status(200).json({ message: 'Attendance marked successfully' });
+//   } catch (error) {
+//     console.error('Error marking attendance:', error);
+//     res.status(500).json({ error: 'Failed to mark attendance' });
+//   }
+// });
 
 app.post('/api/classes/:classId/mark-attendance', async (req, res) => {
   const { studentId, present } = req.body;
@@ -443,13 +563,14 @@ app.post('/api/classes/:classId/mark-attendance', async (req, res) => {
       return res.status(404).json({ error: 'Class not found' });
     }
 
-    // Update attendance for the specified student in the class
-    const existingAttendance = selectedClass.attendance.find(att => att.studentId.toString() === studentId);
-    if (existingAttendance) {
-      existingAttendance.present = present;
-      existingAttendance.timestamp = new Date();
+    const studentAttendance = selectedClass.attendance.find(att => att.studentId.toString() === studentId);
+    if (studentAttendance) {
+      studentAttendance.records.push({ present, timestamp: new Date() });
     } else {
-      selectedClass.attendance.push({ studentId, present, timestamp: new Date() });
+      selectedClass.attendance.push({ 
+        studentId, 
+        records: [{ present, timestamp: new Date() }]
+      });
     }
 
     await selectedClass.save();
@@ -459,6 +580,32 @@ app.post('/api/classes/:classId/mark-attendance', async (req, res) => {
     res.status(500).json({ error: 'Failed to mark attendance' });
   }
 });
+
+// Define a route to fetch all attendance records of a specific student
+// Route to fetch all attendance records of a specific student
+app.get('/api/students/:studentId/attendance', async (req, res) => {
+  const { studentId } = req.params;
+
+  try {
+    // Find the student by ID
+    const student = await Student.findById(studentId);
+    if (!student) {
+      return res.status(404).json({ error: 'Student not found' });
+    }
+
+    // Find all attendance records associated with the student ID
+    const attendanceRecords = await Attendance.find({ 'studentId': studentId });
+
+    res.status(200).json(attendanceRecords);
+  } catch (error) {
+    console.error('Error fetching student attendance records:', error);
+    res.status(500).json({ error: 'Failed to fetch student attendance records' });
+  }
+});
+
+
+
+
 
 // Example backend route handler for marking attendance
 app.post('/api/classes/:courseId/attendance', async(req, res) => {
@@ -484,6 +631,30 @@ app.post('/api/classes/:courseId/attendance', async(req, res) => {
 
 
 // Route to fetch attendance for a specific class
+// app.get('/api/classes/:courseId/attendance', async (req, res) => {
+//   const { courseId } = req.params;
+
+//   try {
+//     const selectedClass = await Class.findById(courseId).populate('attendance.studentId', 'name');
+//     if (!selectedClass) {
+//       return res.status(404).json({ error: 'Class not found' });
+//     }
+
+//     const attendance = selectedClass.attendance.map((record) => ({
+//       // studentId: record.studentId._id,
+//       studentName: record.studentId.name,
+//       present: record.present,
+//       timestamp: record.timestamp,
+//     }));
+
+//     res.status(200).json(attendance);
+//   } catch (error) {
+//     console.error('Error fetching attendance:', error);
+//     res.status(500).json({ error: 'Failed to fetch attendance' });
+//   }
+// });
+
+// Route to fetch attendance for a specific class
 app.get('/api/classes/:courseId/attendance', async (req, res) => {
   const { courseId } = req.params;
 
@@ -494,13 +665,12 @@ app.get('/api/classes/:courseId/attendance', async (req, res) => {
     }
 
     const attendance = selectedClass.attendance.map((record) => ({
-      // studentId: record.studentId._id,
-      studentName: record.studentId.name,
-      present: record.present,
-      timestamp: record.timestamp,
+      studentName: record.studentId ? record.studentId.name : 'N/A',
+      present: record.records.length > 0 ? record.records[record.records.length - 1].present : false, // Ensure 'present' property is correctly set
+      timestamp: record.records.length > 0 ? record.records[record.records.length - 1].timestamp : null,
     }));
 
-    res.status(200).json(attendance);
+    res.status(200).json({ attendance, lastAttendanceTimestamp: selectedClass.attendance.length > 0 ? selectedClass.attendance[selectedClass.attendance.length - 1].records.length > 0 ? selectedClass.attendance[selectedClass.attendance.length - 1].records[selectedClass.attendance[selectedClass.attendance.length - 1].records.length - 1].timestamp : null : null });
   } catch (error) {
     console.error('Error fetching attendance:', error);
     res.status(500).json({ error: 'Failed to fetch attendance' });

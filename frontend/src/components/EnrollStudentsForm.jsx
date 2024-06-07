@@ -11,7 +11,12 @@ const EnrollStudentsForm = () => {
   useEffect(() => {
     const fetchClasses = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/classes');
+        const token = localStorage.getItem('token');
+        const response = await axios.get('http://localhost:5000/api/classes', {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
         setClasses(response.data);
       } catch (error) {
         console.error('Error fetching classes:', error);
@@ -36,7 +41,15 @@ const EnrollStudentsForm = () => {
   };
 
   const handleStudentChange = (e) => {
-    const selectedStudentIds = Array.from(e.target.selectedOptions, (option) => option.value);
+    const selectedStudentIds = [...studentIds];
+    if (e.target.checked) {
+      selectedStudentIds.push(e.target.value);
+    } else {
+      const index = selectedStudentIds.indexOf(e.target.value);
+      if (index > -1) {
+        selectedStudentIds.splice(index, 1);
+      }
+    }
     setStudentIds(selectedStudentIds);
   };
 
@@ -61,7 +74,7 @@ const EnrollStudentsForm = () => {
     <div className={styles.formContainer}>
       <h2>Enroll Students to Course</h2>
       <form onSubmit={handleSubmit} className={styles.innerForm}>
-        <label htmlFor="courseId" className={styles.label}>Select Course:</label>
+        <label htmlFor="courseId" className={styles.label}>Select Course</label>
         <select id="courseId" value={courseId} onChange={handleCourseChange} className={styles.selectField} required>
           <option value="">Select a course</option>
           {classes.map((cls) => (
@@ -69,13 +82,22 @@ const EnrollStudentsForm = () => {
           ))}
         </select>
 
-        <label htmlFor="studentIds" className={styles.label}>Select Students:</label>
-        <select id="studentIds" multiple value={studentIds} onChange={handleStudentChange} className={styles.selectField} required>
-          {students.map((student) => (
-            <option key={student._id} value={student._id}>{student.name}</option>
+        <label htmlFor="studentIds" className={styles.label}>Select Students</label>
+        <div className={styles.studentItem}>
+        {students.map((student) => (
+            <div key={student._id}>
+              <input
+                type="checkbox"
+                id={`student-${student._id}`}
+                value={student._id}
+                checked={studentIds.includes(student._id)}
+                onChange={handleStudentChange}
+                className={styles.checkbox}
+              />
+              <label htmlFor={`student-${student._id}`} className={styles.studentLabel}>{student.name}</label>
+            </div>
           ))}
-        </select>
-
+          </div>
         <button type="submit" className={styles.button}>Enroll Students</button>
       </form>
     </div>

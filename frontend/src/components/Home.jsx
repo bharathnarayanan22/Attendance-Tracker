@@ -18,9 +18,9 @@ const Home = () => {
         <Link to="/register" className={styles.getStartedButton}>
           Take Attendance
         </Link>
-        <Link to="/faculty-detection" className={styles.getStartedButton}>
+        {/* <Link to="/faculty-detection" className={styles.getStartedButton}>
           Detect Faculty
-        </Link>
+        </Link> */}
         </div>
       </div>
     </div>

@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Dashboard from "./components/Dashboard";
 import Register from "./components/Register";
 import FacultyDetection from "./components/FacultyDetection";
+import MotionIntro from "./components/MotionIntro";
 
 const App = () => {
   return(
@@ -11,7 +12,8 @@ const App = () => {
     <main>
     <Router>
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<MotionIntro />} />
+        <Route path="/home" element={<Home />} />
         <Route path="/register" element={<Register />} />
         <Route path="/dashboard/*" element={<Dashboard />} />
         <Route path="/faculty-detection" element={<FacultyDetection />} />
