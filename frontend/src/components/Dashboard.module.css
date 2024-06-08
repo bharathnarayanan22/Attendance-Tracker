@@ -26,6 +26,30 @@ h2 {
   color: white;
 }
 
+.backButton {
+  background-color: #a40a0a; 
+  border: white;
+}
+
+.backButton:hover {
+  background-color: #ffffff; /* Darker shade of gray on hover */
+  color: red;
+}
+
+.viewButton, .attendanceButton {
+  background-color: #000f99; /* Blue button */
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+.attendanceButton:hover {
+  background-color: whitesmoke;
+  color:#0056b3 
+}
+
 h3 {
   font-size: 20px;
   margin-bottom: 16px;
@@ -117,20 +141,21 @@ h3 {
 .studentActions {
   display: flex;
   justify-content: space-between;
+  align-items: center;
+}
+
+.videoContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   margin-top: 20px;
 }
 
-.studentActions button {
-  padding: 10px 20px;
-  background-color: #007bff;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.studentActions button:hover {
-  background-color: #0056b3;
+.video {
+  width: 100%;
+  max-width: 400px;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .attendanceCheckbox {

@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import styles from './EnrollStudentsForm.module.css'; // Import CSS styles
+import styles from './EnrollStudentsForm.module.css'; 
+import successGif from '/src/assets/success.gif';
 
 const EnrollStudentsForm = () => {
   const [courseId, setCourseId] = useState('');
   const [studentIds, setStudentIds] = useState([]);
   const [classes, setClasses] = useState([]);
   const [students, setStudents] = useState([]);
+  const [showSuccessGif, setShowSuccessGif] = useState(false);
 
   useEffect(() => {
     const fetchClasses = async () => {
@@ -64,7 +66,13 @@ const EnrollStudentsForm = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      console.log(response.data); // Handle success
+      setCourseId('');
+      setStudentIds([]);
+
+      setShowSuccessGif(true); // Show success GIF
+      setTimeout(() => {
+        setShowSuccessGif(false); // Hide success GIF after 2 seconds
+      }, 2000);
     } catch (error) {
       console.error('Enrollment failed:', error); // Handle error
     }
@@ -72,6 +80,11 @@ const EnrollStudentsForm = () => {
 
   return (
     <div className={styles.formContainer}>
+      {showSuccessGif && (
+        <div className={styles.successOverlay}>
+          <img src={successGif} alt="Success" className={styles.successGif} />
+        </div>
+      )}
       <h2>Enroll Students to Course</h2>
       <form onSubmit={handleSubmit} className={styles.innerForm}>
         <label htmlFor="courseId" className={styles.label}>Select Course</label>

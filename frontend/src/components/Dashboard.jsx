@@ -118,7 +118,6 @@ const Dashboard = () => {
   }
 };
 
-
   const handleBack = () => {
     stopCamera();
     setCameraStarted(false);
@@ -126,7 +125,6 @@ const Dashboard = () => {
     setResult('');
     setIsLoading(false);
   };
-  
 
   const startCamera = async () => {
     try {
@@ -146,6 +144,9 @@ const Dashboard = () => {
       videoRef.current.srcObject = null;
     }
     setCameraStarted(false);
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
   };
 
   const takeSnapshot = () => {
@@ -205,38 +206,56 @@ const Dashboard = () => {
       console.log(`Attendance marked for ${detectedName}`);
       const updatedAttendanceMap = { ...attendanceMap };
 
-    if (matchedStudent._id in updatedAttendanceMap) {
-      updatedAttendanceMap[matchedStudent._id] = {
-        ...updatedAttendanceMap[matchedStudent._id],
-        present: !updatedAttendanceMap[matchedStudent._id].present,
-        timestamp: new Date().toLocaleString(),
-      };
-    } else {
+      if (matchedStudent._id in updatedAttendanceMap) {
+        updatedAttendanceMap[matchedStudent._id] = {
+          ...updatedAttendanceMap[matchedStudent._id],
+          present: !updatedAttendanceMap[matchedStudent._id].present,
+          timestamp: new Date().toLocaleString(),
+        };
+      } else {
+        updatedAttendanceMap[matchedStudent._id] = {
+          present: true,
+          timestamp: new Date().toLocaleString(),
+        };
+      }
 
-      updatedAttendanceMap[matchedStudent._id] = {
-        present: true,
-        timestamp: new Date().toLocaleString(),
-      };
-    }
-
-    setAttendanceMap(updatedAttendanceMap);
-    storeAttendance(matchedStudent._id, updatedAttendanceMap[matchedStudent._id].present);
+      setAttendanceMap(updatedAttendanceMap);
+      storeAttendance(matchedStudent._id, updatedAttendanceMap[matchedStudent._id].present);
     }
   };
-  
+
+  // const handleTakeAttendance = async () => {
+  //   if (!cameraStarted) {
+  //     startCamera();
+  //     setCameraStarted(true);
+  //   }
+
+  //   setIsLoading(true);
+
+  //   intervalRef.current = setInterval(async () => {
+  //     await sendSnapshot();
+  //     setIsLoading(false);
+  //   }, 30000);
+  // };
+
   const handleTakeAttendance = async () => {
     if (!cameraStarted) {
       startCamera();
       setCameraStarted(true);
+      setIsLoading(true);
+  
+      intervalRef.current = setInterval(async () => {
+        await sendSnapshot();
+        setIsLoading(false);
+      }, 30000);
+    } else {
+      stopCamera();
+      setCameraStarted(false);
+      setResult('')
+      setIsLoading(false);
     }
-
-    setIsLoading(true); 
-
-    intervalRef.current = setInterval(async () => {
-      await sendSnapshot();
-      setIsLoading(false); 
-    }, 30000);
   };
+  
 
   const storeAttendance = async (studentId, present) => {
     try {
@@ -250,18 +269,16 @@ const Dashboard = () => {
           }
         }
       );
-  
-      console.log(response.data.message); 
+
+      console.log(response.data.message);
     } catch (error) {
       console.error('Error marking attendance:', error);
     }
   };
 
-  
   const handleViewAttendance = (courseId) => {
-    console.log(courseId)
+    setShowAttendance(!showAttendance);
     setSelectedCourse(courseId);
-    setShowAttendance(true);
   };
 
 
@@ -280,8 +297,8 @@ const Dashboard = () => {
             <div className={styles.mainContent}>
               <div className={styles.courseDetailsContainer}>
                 <div className={styles.courseDetailsHeader}>
-                  <h2>Course Details {selectedCourse?.courseName}</h2>
-                  <button onClick={handleBack}>Back</button>
+                <h2 style={{ color: "white" }}>Course Details {selectedCourse?.courseName}</h2>
+                  <button className={styles.backButton} onClick={handleBack}>Back</button>
                 </div>
                 <table className={styles.studentTable}>
                   <thead>
@@ -303,36 +320,44 @@ const Dashboard = () => {
                             type="checkbox"
                             checked={attendanceMap[student._id] && attendanceMap[student._id].present}
                             className={styles.attendanceCheckbox}
-                            // disabled
-                          /></td>                        
+                          />
+                        </td>
                         <td>{attendanceMap[student._id] ? attendanceMap[student._id].timestamp : 'N/A'}</td>
                         <td>
-        <button onClick={() => handleUnenroll(selectedCourse, student._id)} className={styles.backButton}>Unenroll</button>
-      </td>
+                          <button onClick={() => handleUnenroll(selectedCourse, student._id)} className={styles.backButton}>Unenroll</button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
-                <div className={styles.studentActions}>              
-                {cameraStarted ? (
-                  <div>
-                    <video ref={videoRef} autoPlay />
+                <div className={styles.studentActions}>
+                <button
+                    className={styles.attendanceButton}
+                    onClick={handleTakeAttendance}
+                  >
+                    {cameraStarted ? 'Stop Camera' : 'Start Camera'}
+                  </button>
+                  <div className={styles.videoContainer}>
+                    <video ref={videoRef} autoPlay className={styles.video} />
                     {isLoading ? (
                       <p>Loading...</p>
                     ) : (
                       result && <p>{result}</p>
                     )}
                   </div>
-                ) : (
-                  <button onClick={handleTakeAttendance}>Start Camera</button>
-                )}
-              <button className={styles.deleteButton} onClick={() => handleViewAttendance(selectedCourse)}>View Attendance</button>
+                  
+                  <button
+                    className={styles.attendanceButton}
+                    onClick={() => handleViewAttendance(selectedCourse)}
+                  >
+                    {showAttendance ? 'Close Attendance' : 'View Attendance'}
+                  </button>
                 </div>
-                {showAttendance && <AttendanceDisplay courseId={selectedCourse} />}
+                {showAttendance && <AttendanceDisplay courseId={selectedCourse} onClose={() => setShowAttendance(false)} />}
               </div>
             </div>
           );
-        }else {
+        } else {
           return (
             <div className={styles.mainContent}>
               <h2>Welcome to Dashboard, {username}!</h2>
@@ -340,29 +365,27 @@ const Dashboard = () => {
                 <h3>Available Courses</h3>
                 <div className={styles.courseList}>
                   {courses.map((course) => (
-                    <div key={course._id} className={styles.courseBox} >
+                    <div key={course._id} className={styles.courseBox}>
                       <h4>{course.courseName}</h4>
                       <p>Course Code: {course.courseCode}</p>
                       <p>Timing: {course.sessionTiming}</p>
                       <p>Students Enrolled: {course.enrolledStudents ? course.enrolledStudents.length : 0}</p>
-                      <div className = "b1">
-                      <button className={styles.deleteButton} onClick={() => handleDeleteCourse(course._id)}>
-                        <img src="src/assets/del.png" style={{height: "14px", width: "15px"}}/>
-                      </button>
-                     {"\t"}{"\t"}<button className={"viewcourse"} onClick={() => handleCourseClick(course._id)}>View course</button>
+                      <div className={styles.courseActions}>
+                        <button className={styles.deleteButton} onClick={() => handleDeleteCourse(course._id)}>
+                          <img src="src/assets/del.png" alt="Delete" className={styles.icon} />
+                        </button>
+                        <button className={styles.viewButton} onClick={() => handleCourseClick(course._id)}>View Course</button>
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
-              
             </div>
           );
         }
     }
   };
 
- 
   return (
     <div className={styles.dashboard}>
       <Sidebar onSelectMenuItem={setSelectedMenuItem} />
