@@ -45,7 +45,7 @@ h2 {
   cursor: pointer;
   transition: background-color 0.3s ease;
 }
-.attendanceButton:hover {
+.viewButton:hover, .attendanceButton:hover {
   background-color: whitesmoke;
   color:#0056b3 
 }

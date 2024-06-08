@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import styles from './CreateClassForm.module.css'; // Import CSS styles
+import successGif from '/src/assets/success.gif'; 
 
 const CreateClassForm = () => {
   const [courseName, setCourseName] = useState('');
@@ -10,6 +11,7 @@ const CreateClassForm = () => {
   const [endTime, setEndTime] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [showSuccessGif, setShowSuccessGif] = useState(false);
 
   // const handleSubmit = async (e) => {
   //   e.preventDefault();
@@ -62,8 +64,12 @@ const CreateClassForm = () => {
 
   return (
     <div className={styles.formContainer}>
+      {showSuccessGif && (
+        <div className={styles.successOverlay}>
+          <img src={successGif} alt="Success" className={styles.successGif} />
+        </div>
+      )}
       <h2>Create Class</h2>
-      {successMessage && <p className={`${styles.messageContainer} ${styles.successMessage}`}>{successMessage}</p>}
       {errorMessage && <p className={`${styles.messageContainer} ${styles.errorMessage}`}>{errorMessage}</p>}
       <form onSubmit={handleSubmit} className={styles.innerForm}>
         
@@ -71,8 +77,8 @@ const CreateClassForm = () => {
           <input
             type="text"
             id="courseName"
-            value={courseName}
             placeholder='Course Name'
+            value={courseName}
             onChange={(e) => setCourseName(e.target.value)}
             className={styles.inputField}
             required
@@ -105,6 +111,7 @@ const CreateClassForm = () => {
             <input
               type="time"
               id="startTime"
+              placeholder='Start Time'
               value={startTime}
               onChange={(e) => setStartTime(e.target.value)}
               className={styles.inputField}

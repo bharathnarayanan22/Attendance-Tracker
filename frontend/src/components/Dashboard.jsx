@@ -374,7 +374,7 @@ const Dashboard = () => {
                         <button className={styles.deleteButton} onClick={() => handleDeleteCourse(course._id)}>
                           <img src="src/assets/del.png" alt="Delete" className={styles.icon} />
                         </button>
-                        <button className={styles.viewButton} onClick={() => handleCourseClick(course._id)}>View Course</button>
+                        {"\t"}{"\t"}<button className={"viewcourse"} onClick={() => handleCourseClick(course._id)}>View course</button>
                       </div>
                     </div>
                   ))}
