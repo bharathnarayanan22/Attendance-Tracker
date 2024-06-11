@@ -372,7 +372,7 @@ const Dashboard = () => {
                       <p>Students Enrolled: {course.enrolledStudents ? course.enrolledStudents.length : 0}</p>
                       <div className={styles.courseActions}>
                         <button className={styles.deleteButton} onClick={() => handleDeleteCourse(course._id)}>
-                          <img src="src/assets/del.png" alt="Delete" className={styles.icon} />
+                          <img src="src/assets/del.png" alt="Delete" className={styles.icon} style={{width: 15, height: 14}} />
                         </button>
                         {"\t"}{"\t"}<button className={"viewcourse"} onClick={() => handleCourseClick(course._id)}>View course</button>
                       </div>

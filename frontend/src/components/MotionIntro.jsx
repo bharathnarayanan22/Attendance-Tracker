@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import './MotionIntro.css'; // Ensure this path is correct
+import Spline from '@splinetool/react-spline';
 
 const MotionIntro = () => {
   const navigate = useNavigate();
@@ -74,7 +75,9 @@ const MotionIntro = () => {
           SMART ATTENDANCE TRACKER
         </motion.h2>
       </motion.div>
+      <Spline scene="https://prod.spline.design/n6KCpNplS4XRJGDU/scene.splinecode" />
     </motion.div>
+    
   );
 };
 
